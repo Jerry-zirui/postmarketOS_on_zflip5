@@ -1,0 +1,73 @@
+#!/bin/sh
+# Configures and compiles lean mainline Linux Image.gz + sm8550-samsung-b5q.dtb
+# natively on the phone's 8-core Snapdragon 8 Gen 2 (in Alpine aarch64 chroot).
+set -e
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export TMPDIR=/tmp
+
+cd /root/work/linux
+
+# 1. Register sm8550-samsung-b5q.dtb in arch/arm64/boot/dts/qcom/Makefile
+if ! grep -q "sm8550-samsung-b5q.dtb" arch/arm64/boot/dts/qcom/Makefile; then
+    sed -i 's/sm8550-samsung-q5q.dtb/sm8550-samsung-q5q.dtb\ndtb-$(CONFIG_ARCH_QCOM)\t+= sm8550-samsung-b5q.dtb/' arch/arm64/boot/dts/qcom/Makefile
+fi
+
+# 2. Generate base arm64 defconfig, then strip unrelated SoC/GPU/network bloat for fast ~3 min build
+make O=.output defconfig
+
+CFG=.output/.config
+SC=./scripts/config
+
+# Disable unrelated SoC families & giant PCI/desktop drivers to save ~30 mins of compile time
+for opt in \
+    ARCH_ACTIONS ARCH_SUNXI ARCH_ALPINE ARCH_APPLE ARCH_BCM ARCH_BCM2835 ARCH_BCM_IPROC \
+    ARCH_BCMBCA ARCH_BRCMSTB ARCH_BERLIN ARCH_EXYNOS ARCH_K3 ARCH_LG1K ARCH_HISI \
+    ARCH_KEEMBAY ARCH_MEDIATEK ARCH_MESON ARCH_MVEBU ARCH_NXP ARCH_LAYERSCAPE ARCH_MXC \
+    ARCH_S32 ARCH_MA35 ARCH_NPCM ARCH_REALTEK ARCH_RENESAS ARCH_ROCKCHIP ARCH_SEATTLE \
+    ARCH_INTEL_SOCFPGA ARCH_STM32 ARCH_SYNQUACER ARCH_TEGRA ARCH_SPRD ARCH_THUNDER \
+    ARCH_THUNDER2 ARCH_UNIPHIER ARCH_VEXPRESS ARCH_VISCONTI ARCH_XGENE ARCH_ZYNQMP \
+    DRM_NOUVEAU DRM_AMDGPU DRM_RADEON DRM_ETNAVIV DRM_LIMA DRM_PANFROST DRM_PANTHOR \
+    DRM_TEGRA DRM_VC4 DRM_V3D DRM_ROCKCHIP DRM_MESON DRM_EXYNOS DRM_SUN4I DRM_MEDIATEK \
+    DRM_TIDSS DRM_HISI_HIBMC DRM_HISI_KIRIN DRM_IMX_DCSS DRM_MXSFB \
+    SOUND MEDIA_SUPPORT INFINIBAND BTRFS_FS XFS_FS NFS_FS CIFS_FS \
+    WLAN_VENDOR_BROADCOM WLAN_VENDOR_INTEL WLAN_VENDOR_MEDIATEK WLAN_VENDOR_REALTEK \
+    NET_VENDOR_BROADCOM NET_VENDOR_INTEL NET_VENDOR_MARVELL NET_VENDOR_MELLANOX \
+    NET_VENDOR_REALTEK NET_VENDOR_STMMAC NET_VENDOR_TI \
+    KVM VIRTUALIZATION; do
+    $SC --file "$CFG" --disable "$opt"
+done
+
+# Enable essential Qualcomm SM8550 + SimpleDRM + FBCON + USB Gadget NCM/ECM + UFS + Buttons + Pstore (all built-in =y)
+for opt in \
+    ARCH_QCOM \
+    QCOM_COMMAND_DB QCOM_RPMH QCOM_RPMHPD QCOM_SMEM QCOM_AOSS_QMP QCOM_RMTFS_MEM \
+    COMMON_CLK_QCOM SM_GCC_8550 SM_TCSRCC_8550 SM_DISPCC_8550 QCOM_CLK_RPMH \
+    PINCTRL_SM8550 PINCTRL_QCOM_SPMI_PMIC SPMI SPMI_MSM_PMIC_ARB MFD_SPMI_PMIC \
+    REGULATOR_FIXED_VOLTAGE REGULATOR_QCOM_RPMH \
+    INTERCONNECT INTERCONNECT_QCOM INTERCONNECT_QCOM_RPMH INTERCONNECT_QCOM_SM8550 \
+    QCOM_PDC QCOM_SCM ARM_SMMU I2C_QCOM_GENI \
+    DRM DRM_SIMPLEDRM DRM_FBDEV_EMULATION FB FRAMEBUFFER_CONSOLE \
+    FRAMEBUFFER_CONSOLE_DETECT_PRIMARY FONTS FONT_TER16x32 LOGO \
+    USB USB_DWC3 USB_DWC3_QCOM USB_DWC3_DUAL_ROLE USB_ROLE_SWITCH \
+    PHY_QCOM_SNPS_EUSB2 PHY_QCOM_EUSB2_REPEATER PHY_QCOM_QMP_COMBO PHY_QCOM_QMP_UFS \
+    USB_GADGET USB_CONFIGFS USB_CONFIGFS_NCM USB_CONFIGFS_ECM USB_CONFIGFS_RNDIS USB_CONFIGFS_ACM \
+    USB_U_ETHER USB_F_NCM USB_F_ECM USB_F_RNDIS USB_F_ACM \
+    SCSI BLK_DEV_SD SCSI_UFSHCD SCSI_UFSHCD_PLATFORM SCSI_UFS_QCOM \
+    EXT4_FS F2FS_FS VFAT_FS TMPFS DEVTMPFS DEVTMPFS_MOUNT \
+    INPUT_EVDEV KEYBOARD_GPIO INPUT_PM8941_PWRKEY \
+    PSTORE PSTORE_CONSOLE PSTORE_PMSG PSTORE_RAM \
+    CONFIGFS_FS NET INET PACKET UNIX; do
+    $SC --file "$CFG" --enable "$opt"
+done
+
+# Disable loadable modules for Phase 2 single-file Image.gz simplicity
+$SC --file "$CFG" --disable MODULES
+# Ensure no debug info bloat
+$SC --file "$CFG" --disable DEBUG_INFO
+
+make O=.output olddefconfig
+
+echo "[*] Starting native 8-core SM8550 mainline Linux build..."
+make O=.output -j8 Image.gz qcom/sm8550-samsung-b5q.dtb DTC_FLAGS="-@"
+
+ls -lh .output/arch/arm64/boot/Image.gz .output/arch/arm64/boot/dts/qcom/sm8550-samsung-b5q.dtb
