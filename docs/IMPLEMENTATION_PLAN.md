@@ -109,7 +109,7 @@ flowchart TD
 - **Wi-Fi 6E (`&pcie0` + `ath11k_pci`) — ✅ 已完成（实机扫描 2.4/5/6 GHz AP）**：
   - 打入三星 SM8550 专属 `phy-qcom-qmp-pcie.c` PIPE 时钟补丁、`pwrseq-qcom-wcn.c` 11 条 AOP QMP `qcom,wlan-pdc-init` 投票补丁、补齐 `pmk8550_sleep_clk` (PMK8550 GPIO 3 32.768 kHz 休眠时钟) 与 `max-link-speed = <2>`（匹配原厂 `PCIe Gen.2 x1 5.0 GT/s`）；
   - **关键主线内核 Bug 定位与修复**：通过 `/dev/mem` 直接转储 PCIe0 `PARF_BDF_TO_SID_TABLE_N` 寄存器，发现 Linux 7.3.5 `qcom_pcie_config_sid_1_9_0()` 仍按 **4-cell 步长**解析已升级为 5-cell 的 `sm8550.dtsi` `iommu-map`，导致 `PARF+0x201c` 被写入垃圾值 `0xffed3b00` 且 WCN6855（BDF `01:00.0`）对应的 `PARF+0x2054` 为零，使其 GICv3 ITS MSI 中断全部误路由至 Root Port (`DeviceID 0x1400`)。在 `sm8550-samsung-b5q.dts` 的 `&pcie0` 中覆写 4-cell `iommu-map` 后，全部 32 路 MSI 中断（`bhi`/`mhi`/`ce0..ce8`/`DP_EXT_IRQ`）瞬间畅通；
-  - **实测验收**：`ath11k_pci` 仅用 0.78 秒完成 SBL/AMSS/M3 固件加载（`fw_version 0x11088c35`，`WLAN.HSP.1.1-03125`），注册 **`wlan0`**，完整开启 **2.4 GHz / 5 GHz / 6 GHz (Wi-Fi 6E HE PHY)** 三频并实机扫描出周边 2.4G/5G 热点，且与 `hci0` 蓝牙 5.3 完美并发！
+  - **实测验收**：`ath11k_pci` 仅用 0.78 秒完成 SBL/AMSS/M3 固件加载（`fw_version 0x11088c35`，`WLAN.HSP.1.1-03125`），注册 **`wlan0`**；进一步发现 Z Flip 5 的 WCN6855 使用 **内建 PA (`iPA` / `NFA725`)** 射频架构（默认笔记本 `NFA765` 外置 eFEM BDF 仅能接收无法发射），将 `linux-firmware` 中的 **`NFA725` (`variant=LE`) BDF** 封装映射到本机 `17cb:0108 / chip-id=18 / board-id=255` 后，信号跃升至 **`-31 dBm`**，一次完成 WPA2 握手与 DHCP 取址（`192.168.100.8/24`），实测外网 Ping `0%` 丢包且支持 **无线免线 SSH 直连**，与 `hci0` 蓝牙 5.3 完美并发！
 
 ---
 
