@@ -146,6 +146,9 @@
 			regulator-min-microvolt = <3104000>;
 			regulator-max-microvolt = <3104000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			/* Keep TI eUSB2 repeater (0x3e) 3.1V rail alive */
+			regulator-boot-on;
+			regulator-always-on;
 		};
 
 		vreg_l6b_1p8: ldo6 {
@@ -612,14 +615,18 @@
 	dr_mode = "peripheral";
 	maximum-speed = "high-speed";
 	/delete-property/ usb-role-switch;
-	phys = <&usb_1_hsphy>;
-	phy-names = "usb2-phy";
 	status = "okay";
 };
 
 &usb_1_hsphy {
 	vdd-supply = <&vreg_l1e_0p88>;
 	vdda12-supply = <&vreg_l3e_1p2>;
+	status = "okay";
+};
+
+&usb_dp_qmpphy {
+	vdda-phy-supply = <&vreg_l3f_0p91>;
+	vdda-pll-supply = <&vreg_l3e_1p2>;
 	status = "okay";
 };
 
