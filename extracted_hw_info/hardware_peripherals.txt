@@ -1,0 +1,802 @@
+=== DRM ===
+==> /sys/class/drm/card0-DP-1/status <==
+disconnected
+
+==> /sys/class/drm/card0-DSI-1/status <==
+connected
+
+==> /sys/class/drm/card0-DSI-2/status <==
+connected
+
+==> /sys/class/drm/card0-Virtual-1/status <==
+connected
+
+==> /sys/class/drm/card0-Virtual-2/status <==
+connected
+
+==> /sys/class/drm/card0-DP-1/modes <==
+
+==> /sys/class/drm/card0-DSI-1/modes <==
+1080x2640x120xcmdHS
+1080x2640x96xcmdHS
+1080x2640x60xcmdHS
+1080x2640x60xcmdPHS
+1080x2640x48xcmdHS
+1080x2640x30xcmdHS
+1080x2640x30xcmdPHS
+1080x2640x24xcmdHS
+1080x2640x24xcmdPHS
+1080x2640x10xcmdHS
+1080x2640x10xcmdPHS
+
+==> /sys/class/drm/card0-DSI-2/modes <==
+720x748x60xcmdHS
+
+==> /sys/class/drm/card0-Virtual-1/modes <==
+5120x2560
+5120x2160
+2160x5120
+4096x2160
+4096x2160
+2560x1600
+2560x1600
+1920x1440
+1856x1392
+1792x1344
+2048x1152
+1920x1200
+1920x1200
+1920x1080
+1600x1200
+1680x1050
+1680x1050
+1400x1050
+1400x1050
+1600x900
+
+==> /sys/class/drm/card0-Virtual-2/modes <==
+5120x2560
+5120x2160
+2160x5120
+4096x2160
+4096x2160
+2560x1600
+2560x1600
+1920x1440
+1856x1392
+1792x1344
+2048x1152
+1920x1200
+1920x1200
+1920x1080
+1600x1200
+1680x1050
+1680x1050
+1400x1050
+1400x1050
+1600x900
+
+==> /sys/class/lcd/panel/SVC_OCTA <==
+b90f17212a25800bec0c8e
+==> /sys/class/lcd/panel/SVC_OCTA2 <==
+c71616391e246e0bed0c8e
+==> /sys/class/lcd/panel/SVC_OCTA2_CHIPID <==
+31101f3A3EH1SC694EAA059
+==> /sys/class/lcd/panel/SVC_OCTA2_DDI_CHIPID <==
+e1650749ad
+==> /sys/class/lcd/panel/SVC_OCTA_CHIPID <==
+13838570&!*%ØC…p&!*%
+==> /sys/class/lcd/panel/SVC_OCTA_DDI_CHIPID <==
+aa43857026
+==> /sys/class/lcd/panel/actual_mask_brightness <==
+0
+
+==> /sys/class/lcd/panel/adaptive_control <==
+
+==> /sys/class/lcd/panel/aid_log <==
+
+==> /sys/class/lcd/panel/alpm <==
+2
+
+==> /sys/class/lcd/panel/brightdot <==
+brightdot:0 lf_brightdot:0
+
+==> /sys/class/lcd/panel/brt_avg <==
+241
+
+==> /sys/class/lcd/panel/ccd_state <==
+-1
+
+==> /sys/class/lcd/panel/cell_id <==
+b90f17212a25800bec0c8e
+==> /sys/class/lcd/panel/conn_det <==
+connected
+
+==> /sys/class/lcd/panel/contrast <==
+
+==> /sys/class/lcd/panel/copr <==
+copr_mask=0 copr_cnt_re=0 copr_ilc=0 copr_gamma=1 copr_en=1 copr_er=285 copr_eg=768 copr_eb=768 copr_erc=0 copr_egc=0 copr_ebc=0 copr_max_cnt=64 copr_roi_on=0 copr_roi_ctrl=0 copr_roi1_x_s=64 copr_roi1_y_s=64 copr_roi1_x_e=256 copr_roi1_y_e=256 copr_roi2_x_s=0 copr_roi2_y_s=0 copr_roi2_x_e=0 copr_roi2_y_e=0 copr_roi3_x_s=0 copr_roi3_y_s=0 copr_roi3_x_e=0 copr_roi3_y_e=0 copr_roi4_x_s=0 copr_roi4_y_s=0 copr_roi4_x_e=0 copr_roi4_y_e=0 copr_roi5_x_s=0 copr_roi5_y_s=0 copr_roi5_x_e=0 copr_roi5_y_e=0 copr_roi6_x_s=0 copr_roi6_y_s=0 copr_roi6_x_e=0 copr_roi6_y_e=0
+
+==> /sys/class/lcd/panel/copr_roi <==
+-1
+
+==> /sys/class/lcd/panel/dia <==
+
+==> /sys/class/lcd/panel/dpci <==
+"QCT_DSIE":"0","QCT_PPTO":"0","QCT_NO_TE":"0","QCT_RCV_CNT":"0","QCT_SSLOG":"","QCT_MAIN_RX_FAIL_CNT":"0","QCT_SUB_RX_FAIL_CNT":"0","QCT_GPU_PF":"0"
+==> /sys/class/lcd/panel/dpci_dbg <==
+
+==> /sys/class/lcd/panel/dpui <==
+"WCRD_X":"3053","WCRD_Y":"3214","WOFS_R":"0","WOFS_G":"0","WOFS_B":"0","WOFS_R_ORG":"0","WOFS_G_ORG":"0","WOFS_B_ORG":"0","LCDM_ID1":"128","LCDM_ID2":"0","LCDM_ID3":"5","MAID_DATE":"20230722 062500","CELLID":"c71616391e246e0bed0c8e","OCTAID":"31101f3A3EH1SC694EAA059","PNDSIE":"0","PNELVDE":"0","PNVLI1E":"0","PNVLO3E":"0","PNSDRE":"0","PNPOCT":"0","PNPOCF":"0","PNPOCI":"0","PNPOCI_ORG":"0","PNPOC_ER_T":"0","PNPOC_ER_F":"0","PNPOC_WR_T":"0","PNPOC_WR_F":"0","PNPOC_RD_T":"0","PNPOC_RD_F":"0","PNGFLS":"0","UB_CON":"0","SUB_UB_CON":"0","ECC_ERR":"0","FLASH_LOAD":"0"
+==> /sys/class/lcd/panel/dpui_dbg <==
+
+==> /sys/class/lcd/panel/dsc_crc <==
+-1 14 00
+
+==> /sys/class/lcd/panel/dynamic_freq <==
+idx clk_rate
+[0] 951000000
+[1] 954000000
+[2] 997000000
+Write [idx] to dynamic_freq node to set clk_rate.
+To revert it (use rf info), Write 0 to dynamic_freq node.
+
+==> /sys/class/lcd/panel/dynamic_hlpm <==
+
+==> /sys/class/lcd/panel/ecc <==
+1
+==> /sys/class/lcd/panel/esd_check <==
+
+==> /sys/class/lcd/panel/fac_pretest <==
+
+==> /sys/class/lcd/panel/fp_green_circle <==
+
+==> /sys/class/lcd/panel/fw_id <==
+0
+
+==> /sys/class/lcd/panel/gamma_check <==
+
+==> /sys/class/lcd/panel/gamma_comp <==
+
+==> /sys/class/lcd/panel/gamma_flash <==
+1
+1 00000000
+
+==> /sys/class/lcd/panel/gamma_interpolation_test <==
+
+==> /sys/class/lcd/panel/gct <==
+-2 0x00000000
+==> /sys/class/lcd/panel/glut_test <==
+[val] [test]
+0 : default
+1 : use 0x00 val for all GLUT
+2 : skip GLUT val
+
+==> /sys/class/lcd/panel/grayspot <==
+
+==> /sys/class/lcd/panel/hmt_bright <==
+0
+
+==> /sys/class/lcd/panel/hmt_on <==
+0
+
+==> /sys/class/lcd/panel/hw_cursor <==
+
+==> /sys/class/lcd/panel/ioctl_power_ctrl <==
+enable_refcnt : 0
+
+==> /sys/class/lcd/panel/irc_mode <==
+0
+
+==> /sys/class/lcd/panel/isc <==
+
+==> /sys/class/lcd/panel/isc_defect <==
+
+==> /sys/class/lcd/panel/itp_log <==
+
+==> /sys/class/lcd/panel/lcd_power <==
+
+==> /sys/class/lcd/panel/lcd_type <==
+SDC_810012
+
+==> /sys/class/lcd/panel/lux <==
+1
+
+==> /sys/class/lcd/panel/mafpc_check <==
+-14 14 36 
+
+==> /sys/class/lcd/panel/mafpc_test <==
+
+==> /sys/class/lcd/panel/manufacture_code <==
+aa43857026
+==> /sys/class/lcd/panel/manufacture_date <==
+manufacture date : 20220915
+
+==> /sys/class/lcd/panel/mask_brightness <==
+
+==> /sys/class/lcd/panel/max_contrast <==
+0
+
+==> /sys/class/lcd/panel/mcd_mode <==
+
+==> /sys/class/lcd/panel/motto <==
+
+==> /sys/class/lcd/panel/mst <==
+
+==> /sys/class/lcd/panel/night_dim <==
+
+==> /sys/class/lcd/panel/octa_id <==
+13838570&!*%ØC…p&!*%
+==> /sys/class/lcd/panel/panel <==
+
+==> /sys/class/lcd/panel/parse_cmd <==
+
+==> /sys/class/lcd/panel/partial_disp <==
+
+==> /sys/class/lcd/panel/poc <==
+3 0 00
+
+==> /sys/class/lcd/panel/poc_info <==
+poc_mca_image_size 551186
+
+==> /sys/class/lcd/panel/poc_mca <==
+
+==> /sys/class/lcd/panel/power <==
+
+==> /sys/class/lcd/panel/power_reduce <==
+1
+
+==> /sys/class/lcd/panel/read_copr <==
+-1
+
+==> /sys/class/lcd/panel/read_flash <==
+No read data.. 
+Please write (addr len) to read_flash store to read flash data
+MAX read size is 256byte at once
+ex) echo 0x0A0000 256 > read_flash 
+- read 0x100(256) bytes from 0x0A000 flash address
+
+==> /sys/class/lcd/panel/read_mtp <==
+No read data.. 
+Please write (addr gpara len) to read_mtp store to read mtp
+ex) echo CA 1 20 > read_mtp 
+- read 20bytes of CAh register from 2nd para. 
+
+==> /sys/class/lcd/panel/rf_info <==
+RF INFO: RAT(3), BAND(93), ARFCN(1650)
+
+==> /sys/class/lcd/panel/self_display <==
+
+==> /sys/class/lcd/panel/self_mask <==
+
+==> /sys/class/lcd/panel/self_mask_check <==
+0 14 36 
+
+==> /sys/class/lcd/panel/self_mask_udc <==
+
+==> /sys/class/lcd/panel/self_move <==
+
+==> /sys/class/lcd/panel/seq_off_delay <==
+off delay: 
+
+==> /sys/class/lcd/panel/seq_on_delay <==
+on delay: 
+
+==> /sys/class/lcd/panel/set_elvss <==
+
+==> /sys/class/lcd/panel/siop_enable <==
+0
+
+==> /sys/class/lcd/panel/spi_if_sel <==
+
+==> /sys/class/lcd/panel/spi_speed <==
+
+==> /sys/class/lcd/panel/ssr <==
+0
+==> /sys/class/lcd/panel/stm <==
+
+==> /sys/class/lcd/panel/subsystem <==
+
+==> /sys/class/lcd/panel/table_legop <==
+
+==> /sys/class/lcd/panel/tcon_pe <==
+nothing to show.
+
+==> /sys/class/lcd/panel/te_check <==
+1
+
+==> /sys/class/lcd/panel/temperature <==
+609502541 1348424769 1112294656 
+
+==> /sys/class/lcd/panel/test <==
+[idx] [test]
+1. BRIGHTNESS
+2. mDNIe
+3. SELF_DISP
+4. EARLY_TE
+Write [idx] [enable] to control
+ex) To disable(0) SELF_DISP(3) write below
+ex) echo 3 0 > test
+
+==> /sys/class/lcd/panel/test_aid <==
+
+==> /sys/class/lcd/panel/tuning <==
+Tunned File Name : 
+
+==> /sys/class/lcd/panel/udc_data <==
+
+==> /sys/class/lcd/panel/udc_fac <==
+
+==> /sys/class/lcd/panel/uevent <==
+
+==> /sys/class/lcd/panel/vglhighdot <==
+
+==> /sys/class/lcd/panel/vlin1_test <==
+
+==> /sys/class/lcd/panel/vrr <==
+120 1
+
+==> /sys/class/lcd/panel/vrr_lfd <==
+- client: fac
+scope=normal: 
+scope=lpm: 
+scope=hmd: 
+
+- client: disp
+scope=normal: 
+scope=lpm: 
+scope=hmd: 
+
+- client: input
+scope=normal: 
+scope=lpm: 
+scope=hmd: 
+
+- client: aod
+scope=normal: 
+scope=lpm: 
+scope=hmd: 
+
+
+==> /sys/class/lcd/panel/window_color <==
+00
+
+==> /sys/class/lcd/panel/window_type <==
+81 00 12
+
+==> /sys/class/lcd/panel/write_mtp <==
+No read data.. 
+Please write (addr gpara len) to read_mtp store to read mtp
+ex) echo CA 1 20 > read_mtp 
+- read 20bytes of CAh register from 2nd para. 
+
+==> /sys/class/lcd/panel/xtalk_mode <==
+
+==> /sys/class/lcd/panel1/SVC_OCTA <==
+b90f17212a25800bec0c8e
+==> /sys/class/lcd/panel1/SVC_OCTA2 <==
+c71616391e246e0bed0c8e
+==> /sys/class/lcd/panel1/SVC_OCTA2_CHIPID <==
+31101f3A3EH1SC694EAA059
+==> /sys/class/lcd/panel1/SVC_OCTA2_DDI_CHIPID <==
+e1650749ad
+==> /sys/class/lcd/panel1/SVC_OCTA_CHIPID <==
+13838570&!*%ØC…p&!*%
+==> /sys/class/lcd/panel1/SVC_OCTA_DDI_CHIPID <==
+aa43857026
+==> /sys/class/lcd/panel1/actual_mask_brightness <==
+0
+
+==> /sys/class/lcd/panel1/adaptive_control <==
+
+==> /sys/class/lcd/panel1/aid_log <==
+
+==> /sys/class/lcd/panel1/alpm <==
+2
+
+==> /sys/class/lcd/panel1/brightdot <==
+brightdot:0 lf_brightdot:0
+
+==> /sys/class/lcd/panel1/brt_avg <==
+
+==> /sys/class/lcd/panel1/ccd_state <==
+
+==> /sys/class/lcd/panel1/cell_id <==
+c71616391e246e0bed0c8e
+==> /sys/class/lcd/panel1/conn_det <==
+connected
+
+==> /sys/class/lcd/panel1/contrast <==
+
+==> /sys/class/lcd/panel1/copr <==
+copr_mask=0 copr_cnt_re=0 copr_ilc=0 copr_gamma=0 copr_en=0 copr_er=0 copr_eg=0 copr_eb=0 copr_erc=0 copr_egc=0 copr_ebc=0 copr_max_cnt=0 copr_roi_on=0 copr_roi_ctrl=0 copr_roi1_x_s=0 copr_roi1_y_s=0 copr_roi1_x_e=0 copr_roi1_y_e=0 copr_roi2_x_s=0 copr_roi2_y_s=0 copr_roi2_x_e=0 copr_roi2_y_e=0 copr_roi3_x_s=0 copr_roi3_y_s=0 copr_roi3_x_e=0 copr_roi3_y_e=0 copr_roi4_x_s=0 copr_roi4_y_s=0 copr_roi4_x_e=0 copr_roi4_y_e=0 copr_roi5_x_s=0 copr_roi5_y_s=0 copr_roi5_x_e=0 copr_roi5_y_e=0 copr_roi6_x_s=0 copr_roi6_y_s=0 copr_roi6_x_e=0 copr_roi6_y_e=0
+
+==> /sys/class/lcd/panel1/copr_roi <==
+
+==> /sys/class/lcd/panel1/dia <==
+
+==> /sys/class/lcd/panel1/dpci <==
+"QCT_DSIE":"0","QCT_PPTO":"0","QCT_NO_TE":"0","QCT_RCV_CNT":"0","QCT_SSLOG":"","QCT_MAIN_RX_FAIL_CNT":"0","QCT_SUB_RX_FAIL_CNT":"0","QCT_GPU_PF":"0"
+==> /sys/class/lcd/panel1/dpci_dbg <==
+
+==> /sys/class/lcd/panel1/dpui <==
+"WCRD_X":"3053","WCRD_Y":"3214","WOFS_R":"0","WOFS_G":"0","WOFS_B":"0","WOFS_R_ORG":"0","WOFS_G_ORG":"0","WOFS_B_ORG":"0","LCDM_ID1":"128","LCDM_ID2":"0","LCDM_ID3":"5","MAID_DATE":"20230722 062500","CELLID":"c71616391e246e0bed0c8e","OCTAID":"31101f3A3EH1SC694EAA059","PNDSIE":"0","PNELVDE":"0","PNVLI1E":"0","PNVLO3E":"0","PNSDRE":"0","PNPOCT":"0","PNPOCF":"0","PNPOCI":"0","PNPOCI_ORG":"0","PNPOC_ER_T":"0","PNPOC_ER_F":"0","PNPOC_WR_T":"0","PNPOC_WR_F":"0","PNPOC_RD_T":"0","PNPOC_RD_F":"0","PNGFLS":"0","UB_CON":"0","SUB_UB_CON":"0","ECC_ERR":"0","FLASH_LOAD":"0"
+==> /sys/class/lcd/panel1/dpui_dbg <==
+
+==> /sys/class/lcd/panel1/dsc_crc <==
+
+==> /sys/class/lcd/panel1/dynamic_freq <==
+idx clk_rate
+[0] 951000000
+[1] 954000000
+[2] 997000000
+Write [idx] to dynamic_freq node to set clk_rate.
+To revert it (use rf info), Write 0 to dynamic_freq node.
+
+==> /sys/class/lcd/panel1/dynamic_hlpm <==
+
+==> /sys/class/lcd/panel1/ecc <==
+
+==> /sys/class/lcd/panel1/esd_check <==
+
+==> /sys/class/lcd/panel1/fac_pretest <==
+
+==> /sys/class/lcd/panel1/fp_green_circle <==
+
+==> /sys/class/lcd/panel1/fw_id <==
+-1
+
+==> /sys/class/lcd/panel1/gamma_check <==
+
+==> /sys/class/lcd/panel1/gamma_comp <==
+
+==> /sys/class/lcd/panel1/gamma_flash <==
+
+==> /sys/class/lcd/panel1/gamma_interpolation_test <==
+
+==> /sys/class/lcd/panel1/gct <==
+-2 0x00000000
+==> /sys/class/lcd/panel1/glut_test <==
+[val] [test]
+0 : default
+1 : use 0x00 val for all GLUT
+2 : skip GLUT val
+
+==> /sys/class/lcd/panel1/grayspot <==
+
+==> /sys/class/lcd/panel1/hmt_bright <==
+
+==> /sys/class/lcd/panel1/hmt_on <==
+
+==> /sys/class/lcd/panel1/hw_cursor <==
+
+==> /sys/class/lcd/panel1/ioctl_power_ctrl <==
+enable_refcnt : 0
+
+==> /sys/class/lcd/panel1/irc_mode <==
+0
+
+==> /sys/class/lcd/panel1/isc <==
+
+==> /sys/class/lcd/panel1/isc_defect <==
+
+==> /sys/class/lcd/panel1/itp_log <==
+
+==> /sys/class/lcd/panel1/lcd_power <==
+
+==> /sys/class/lcd/panel1/lcd_type <==
+SDC_800005
+
+==> /sys/class/lcd/panel1/lux <==
+0
+
+==> /sys/class/lcd/panel1/mafpc_check <==
+
+==> /sys/class/lcd/panel1/mafpc_test <==
+
+==> /sys/class/lcd/panel1/manufacture_code <==
+e1650749ad
+==> /sys/class/lcd/panel1/manufacture_date <==
+manufacture date : 20230722
+
+==> /sys/class/lcd/panel1/mask_brightness <==
+
+==> /sys/class/lcd/panel1/max_contrast <==
+0
+
+==> /sys/class/lcd/panel1/mcd_mode <==
+
+==> /sys/class/lcd/panel1/motto1 <==
+
+==> /sys/class/lcd/panel1/mst <==
+
+==> /sys/class/lcd/panel1/night_dim <==
+
+==> /sys/class/lcd/panel1/octa_id <==
+31101f3A3EH1SC694EAA059
+==> /sys/class/lcd/panel1/panel1 <==
+
+==> /sys/class/lcd/panel1/parse_cmd <==
+
+==> /sys/class/lcd/panel1/partial_disp <==
+
+==> /sys/class/lcd/panel1/poc <==
+
+==> /sys/class/lcd/panel1/poc_info <==
+poc_mca_image_size 0
+
+==> /sys/class/lcd/panel1/poc_mca <==
+
+==> /sys/class/lcd/panel1/power <==
+
+==> /sys/class/lcd/panel1/power_reduce <==
+1
+
+==> /sys/class/lcd/panel1/read_copr <==
+-1
+
+==> /sys/class/lcd/panel1/read_flash <==
+No read data.. 
+Please write (addr len) to read_flash store to read flash data
+MAX read size is 256byte at once
+ex) echo 0x0A0000 256 > read_flash 
+- read 0x100(256) bytes from 0x0A000 flash address
+
+==> /sys/class/lcd/panel1/read_mtp <==
+No read data.. 
+Please write (addr gpara len) to read_mtp store to read mtp
+ex) echo CA 1 20 > read_mtp 
+- read 20bytes of CAh register from 2nd para. 
+
+==> /sys/class/lcd/panel1/rf_info <==
+RF INFO: RAT(3), BAND(93), ARFCN(1650)
+
+==> /sys/class/lcd/panel1/self_display <==
+
+==> /sys/class/lcd/panel1/self_mask <==
+
+==> /sys/class/lcd/panel1/self_mask_check <==
+
+==> /sys/class/lcd/panel1/self_mask_udc <==
+
+==> /sys/class/lcd/panel1/self_move <==
+
+==> /sys/class/lcd/panel1/seq_off_delay <==
+off delay: 
+
+==> /sys/class/lcd/panel1/seq_on_delay <==
+on delay: 
+
+==> /sys/class/lcd/panel1/set_elvss <==
+
+==> /sys/class/lcd/panel1/siop_enable <==
+0
+
+==> /sys/class/lcd/panel1/spi_if_sel <==
+
+==> /sys/class/lcd/panel1/spi_speed <==
+
+==> /sys/class/lcd/panel1/ssr <==
+
+==> /sys/class/lcd/panel1/stm <==
+
+==> /sys/class/lcd/panel1/subsystem <==
+
+==> /sys/class/lcd/panel1/table_legop <==
+
+==> /sys/class/lcd/panel1/tcon_pe <==
+nothing to show.
+
+==> /sys/class/lcd/panel1/te_check <==
+0
+
+==> /sys/class/lcd/panel1/temperature <==
+609502541 1348424769 1112294656 
+
+==> /sys/class/lcd/panel1/test <==
+[idx] [test]
+1. BRIGHTNESS
+2. mDNIe
+3. SELF_DISP
+4. EARLY_TE
+Write [idx] [enable] to control
+ex) To disable(0) SELF_DISP(3) write below
+ex) echo 3 0 > test
+
+==> /sys/class/lcd/panel1/test_aid <==
+
+==> /sys/class/lcd/panel1/tuning <==
+Tunned File Name : 
+
+==> /sys/class/lcd/panel1/udc_data <==
+
+==> /sys/class/lcd/panel1/udc_fac <==
+
+==> /sys/class/lcd/panel1/uevent <==
+
+==> /sys/class/lcd/panel1/vglhighdot <==
+
+==> /sys/class/lcd/panel1/vlin1_test <==
+
+==> /sys/class/lcd/panel1/vrr <==
+60 0
+
+==> /sys/class/lcd/panel1/vrr_lfd <==
+no support LFD
+
+==> /sys/class/lcd/panel1/window_color <==
+00
+
+==> /sys/class/lcd/panel1/window_type <==
+80 00 05
+
+==> /sys/class/lcd/panel1/write_mtp <==
+No read data.. 
+Please write (addr gpara len) to read_mtp store to read mtp
+ex) echo CA 1 20 > read_mtp 
+- read 20bytes of CAh register from 2nd para. 
+
+==> /sys/class/lcd/panel1/xtalk_mode <==
+=== TOUCH ===
+==> /sys/class/sec/tsp1/cmd_result <==
+set_grip_data,1,45,7,24,792:OK
+
+==> /sys/class/sec/tsp2/cmd_result <==
+set_sip_mode,0:OK
+=== SENSORS ===
+==> /sys/class/sensors/accelerometer_sensor/name <==
+LSM6DSV
+
+==> /sys/class/sensors/als_rear/name <==
+STK6D2X
+
+==> /sys/class/sensors/barometer_sensor/name <==
+LPS22DF
+
+==> /sys/class/sensors/grip_sensor/name <==
+SX9360
+
+==> /sys/class/sensors/grip_sensor_sub/name <==
+SX9360_SUB
+
+==> /sys/class/sensors/gyro_sensor/name <==
+LSM6DSV
+
+==> /sys/class/sensors/light_sensor/name <==
+STK33911
+
+==> /sys/class/sensors/magnetic_sensor/name <==
+AK09918
+
+==> /sys/class/sensors/proximity_sensor/name <==
+STK33911
+
+==> /sys/class/sensors/sub_accelerometer_sensor/name <==
+LSM6DSVW
+
+==> /sys/class/sensors/sub_gyro_sensor/name <==
+LSM6DSVW
+
+==> /sys/class/sensors/accelerometer_sensor/vendor <==
+STM
+
+==> /sys/class/sensors/barometer_sensor/vendor <==
+STM
+
+==> /sys/class/sensors/grip_sensor/vendor <==
+SEMTECH
+
+==> /sys/class/sensors/grip_sensor_sub/vendor <==
+SEMTECH
+
+==> /sys/class/sensors/gyro_sensor/vendor <==
+STM
+
+==> /sys/class/sensors/light_sensor/vendor <==
+SensorTek
+
+==> /sys/class/sensors/magnetic_sensor/vendor <==
+AKM
+
+==> /sys/class/sensors/proximity_sensor/vendor <==
+SensorTek
+
+==> /sys/class/sensors/sub_accelerometer_sensor/vendor <==
+STM
+
+==> /sys/class/sensors/sub_gyro_sensor/vendor <==
+STM
+=== POWER SUPPLY ===
+==> /sys/class/power_supply/ac/uevent <==
+POWER_SUPPLY_NAME=ac
+POWER_SUPPLY_TYPE=Mains
+POWER_SUPPLY_ONLINE=0
+POWER_SUPPLY_TEMP=320
+
+==> /sys/class/power_supply/battery/uevent <==
+POWER_SUPPLY_NAME=battery
+POWER_SUPPLY_TYPE=Battery
+POWER_SUPPLY_STATUS=Full
+POWER_SUPPLY_CHARGE_TYPE=Fast
+POWER_SUPPLY_HEALTH=Good
+POWER_SUPPLY_PRESENT=1
+POWER_SUPPLY_ONLINE=19
+POWER_SUPPLY_TECHNOLOGY=Li-ion
+POWER_SUPPLY_VOLTAGE_NOW=4135000
+POWER_SUPPLY_VOLTAGE_AVG=4272000
+POWER_SUPPLY_CURRENT_NOW=0
+POWER_SUPPLY_CURRENT_AVG=-1
+POWER_SUPPLY_CHARGE_FULL_DESIGN=3700000
+POWER_SUPPLY_CHARGE_FULL=3700000
+POWER_SUPPLY_CHARGE_NOW=0
+POWER_SUPPLY_CAPACITY=100
+POWER_SUPPLY_TEMP=300
+POWER_SUPPLY_TEMP_AMBIENT=300
+POWER_SUPPLY_POWER_NOW=627
+POWER_SUPPLY_POWER_AVG=355
+POWER_SUPPLY_TIME_TO_FULL_NOW=0
+POWER_SUPPLY_CHARGE_COUNTER=3362000
+
+==> /sys/class/power_supply/max77705-charger/uevent <==
+POWER_SUPPLY_NAME=max77705-charger
+POWER_SUPPLY_TYPE=Unknown
+POWER_SUPPLY_ONLINE=3
+
+==> /sys/class/power_supply/max77705-fuelgauge/uevent <==
+
+==> /sys/class/power_supply/max77705-otg/uevent <==
+POWER_SUPPLY_NAME=max77705-otg
+POWER_SUPPLY_TYPE=Unknown
+POWER_SUPPLY_ONLINE=0
+
+==> /sys/class/power_supply/mfc-charger/uevent <==
+POWER_SUPPLY_NAME=mfc-charger
+POWER_SUPPLY_TYPE=Unknown
+POWER_SUPPLY_ONLINE=1
+
+==> /sys/class/power_supply/otg/uevent <==
+POWER_SUPPLY_NAME=otg
+POWER_SUPPLY_TYPE=Unknown
+POWER_SUPPLY_ONLINE=0
+POWER_SUPPLY_VOLTAGE_MAX=0
+
+==> /sys/class/power_supply/pca9482-charger/uevent <==
+POWER_SUPPLY_NAME=pca9482-charger
+POWER_SUPPLY_TYPE=Unknown
+POWER_SUPPLY_ONLINE=0
+
+==> /sys/class/power_supply/pogo/uevent <==
+POWER_SUPPLY_NAME=pogo
+POWER_SUPPLY_TYPE=Unknown
+POWER_SUPPLY_ONLINE=0
+
+==> /sys/class/power_supply/s2asl01-limiter-main/uevent <==
+POWER_SUPPLY_NAME=s2asl01-limiter-main
+POWER_SUPPLY_TYPE=Unknown
+POWER_SUPPLY_HEALTH=Good
+
+==> /sys/class/power_supply/s2asl01-limiter-sub/uevent <==
+POWER_SUPPLY_NAME=s2asl01-limiter-sub
+POWER_SUPPLY_TYPE=Unknown
+POWER_SUPPLY_HEALTH=Good
+
+==> /sys/class/power_supply/sec-direct-charger/uevent <==
+POWER_SUPPLY_NAME=sec-direct-charger
+POWER_SUPPLY_TYPE=Unknown
+POWER_SUPPLY_ONLINE=3
+
+==> /sys/class/power_supply/sec-dual-battery/uevent <==
+POWER_SUPPLY_NAME=sec-dual-battery
+POWER_SUPPLY_TYPE=Unknown
+POWER_SUPPLY_STATUS=Charging
+
+==> /sys/class/power_supply/usb/uevent <==
+POWER_SUPPLY_NAME=usb
+POWER_SUPPLY_TYPE=USB
+POWER_SUPPLY_ONLINE=1
+
+==> /sys/class/power_supply/wireless/uevent <==
+POWER_SUPPLY_NAME=wireless
+POWER_SUPPLY_TYPE=Wireless
+POWER_SUPPLY_ONLINE=0
+POWER_SUPPLY_PRESENT=1

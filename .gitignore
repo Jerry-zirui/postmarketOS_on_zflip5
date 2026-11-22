@@ -1,0 +1,24 @@
+# Local host tools & binaries
+/platform-tools/
+*.zip
+*.tar
+*.tar.gz
+*.tar.xz
+
+# Large raw partition images / firmware dumps
+*.img
+*.bin
+*.mbn
+*.mdt
+*.b[0-9][0-9]
+*.elf
+
+# macOS / IDE metadata
+.DS_Store
+.vscode/
+.idea/
+
+# Build & temporary directories
+/build/
+/out/
+/tmp/
