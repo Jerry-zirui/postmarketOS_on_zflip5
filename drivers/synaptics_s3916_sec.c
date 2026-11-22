@@ -98,15 +98,25 @@ static int s3916_read_message(struct s3916_ts *ts, u8 *code, u16 *plen, u8 *payl
 		return -EOVERFLOW;
 	}
 
-	/* Continued read: [0xA5, 0x03, payload..., 0x5A] */
-	ret = s3916_i2c_read(ts, ts->rx_buf, len + 3);
+	/* Continued read: on i2c-gpio, S3916A prefixes [0xXX, 0xA5, 0x03, payload..., 0x5A]
+	 * (or [0xA5, 0x03, payload..., 0x5A]). Read len + 4 bytes and align to 0xA5 0x03.
+	 */
+	ret = s3916_i2c_read(ts, ts->rx_buf, len + 4);
 	if (ret)
 		return ret;
 
-	if (ts->rx_buf[0] == TCM_MARKER && ts->rx_buf[1] == TCM_STATUS_CONTINUED)
-		memcpy(payload, &ts->rx_buf[2], len);
-	else
-		memcpy(payload, ts->rx_buf, len);
+	{
+		int off = 0, i;
+
+		for (i = 0; i < 4; i++) {
+			if (ts->rx_buf[i] == TCM_MARKER &&
+			    ts->rx_buf[i + 1] == TCM_STATUS_CONTINUED) {
+				off = i + 2;
+				break;
+			}
+		}
+		memcpy(payload, &ts->rx_buf[off], len);
+	}
 
 	return 0;
 }
