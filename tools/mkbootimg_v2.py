@@ -39,7 +39,7 @@ def pack_v2(
     second_addr: int = 0x00000000,
     tags_addr: int = 0x01E00000,
     dtb_addr: int = 0x01F00000,
-    os_version: int = 0x1C000193,
+    os_version: int = 0x1A000193,
 ) -> None:
     kernel_data = kernel_path.read_bytes()
     ramdisk_data = ramdisk_path.read_bytes() if ramdisk_path else b""
