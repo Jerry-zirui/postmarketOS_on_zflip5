@@ -82,32 +82,34 @@ flowchart TD
 
 ---
 
-## Phase 3：核心交互外设与无线网络调通
+## Phase 3：核心交互外设与无线网络调通（✅ 核心交互全部点亮，Wi-Fi 6E 收尾中）
 
-在 SSH 终端可用的基础上，逐个点亮日常交互必需的核心外设：
+在 Phase 2 SSH 终端可用的基础上，已完成主线 **Linux 7.3.5** + 持久化 **Alpine 3.21 (`aarch64`)** 桌面环境的全面点亮：
 
-### 3.1 主屏触控 (`Synaptics S3916A`)
-- **DTS 节点**：在 `&qupv3_se4_i2c` (`i2c@a90000`) 下配置 `touchscreen@20`：
-  - 驱动兼容：`synaptics,tcm-i2c`
-  - 中断：`<&tlmm 19 IRQ_TYPE_EDGE_FALLING>`
-  - 配置 3.3V AVDD 与 1.8V IOVDD 供电轨（对照 `fdt.dts` 中的 `tsp_io_ldo-supply` 与 `tsp_avdd_ldo-supply`）。
-- **验收**：`libinput debug-events` 可连续捕获单指滑动与多点触控坐标 (`1080×2640`)。
+### 3.1 主屏触控 (`Synaptics S3916A`) — ✅ 已完成（实机多点触控可用！）
+- **关键逆向与协议发现**：通过反汇编本机 `/vendor_dlkm/lib/modules/synaptics_ts_i2c.ko`（`synaptics_ts_set_up_app_fw` 与 `synaptics_ts_irq_thread`），确认三星 `S3916AA1A0` 固件默认禁用标准 TCM v1 `0x11` 报告，而是启用 **`0xC0 / 0xC1 / 0xC2`** 并通过 `0xC1` (`REPORT_SEC_COORDINATE_EVENT`) 上报**三星 16 字节专有坐标帧**（`4096×4096`、10 指多点触控）。
+- **主线中断驱动**：手写原生 Linux 7.3.5 I2C 硬件中断驱动 [`drivers/synaptics_s3916_sec.c`](../drivers/synaptics_s3916_sec.c)（编译为 `synaptics_s3916_sec.ko`，挂载于 `&i2c4` `0x20`，使用硬件中断 `TLMM GPIO 19` / `IRQ 189`，由 `s2dos05_ldo2` 1.85V 与 `s2dos05_ldo3` 3.3V 供电）。
+- **验收**：`Weston 14` 原生识别为 `Synaptics S3916A Touchscreen`（`/dev/input/event3`），**实机点击、拖拽终端窗口与多点触控响应流畅！**
 
-### 3.2 UFS 4.0 存储与 Rootfs 落盘
-- 启用 `&ufs_mem_hc` 与 `&ufs_mem_phy`，挂载手机内部 UFS 分区；
-- 将 postmarketOS Rootfs 镜像安装至 `/data` 下的镜像文件（Loop 挂载）或独立 userdata 子分区，实现脱离内存盘的高速启动。
+### 3.2 UFS 4.0 存储与持久化 Rootfs 落盘 — ✅ 已完成
+- 在不格式化 `/dev/sda29`（`/cache`，未加密 `ext4`，779 MB）且完整保留 Android `/cache/recovery` 的前提下，部署了持久化 **Alpine Linux 3.21 `aarch64`** 桌面系统至 `/cache/pmos_root`（共 197 个软件包，含 `mesa-dri-gallium`、`mesa-vulkan-freedreno`、`weston 14`、`seatd`、`eudev`、`bluez`、`wpa_supplicant`、`python3` 及本机全部专有固件，剩余 ~297 MB 可用空间）。
+- 新版 [`scripts/build_initramfs_phase3_in_chroot.sh`](../scripts/build_initramfs_phase3_in_chroot.sh) 通过 `mount --bind /mnt/cache/pmos_root /newroot` + `switch_root` 直接切入持久化根文件系统，并保留失败自动回退 initramfs SSH 救援兜底。
 
-### 3.3 GPU 3D 硬件加速 (`Adreno 740`)
-- 启用 `&gpu` (`adreno 740`) 与 `&gmu`，放入本机提取的 `a740_sqe.fw` 与 `gmu_gen70200.bin`；
-- 验证 Mesa `Freedreno` (`glxinfo` / `eglinfo`) 与 `Turnip` (`vulkaninfo`) 硬件渲染正常。
+### 3.3 GPU 3D 硬件加速 (`Adreno 740`) & Wayland 图形桌面 — ✅ 已完成
+- 启用 `&gpu` (`3d00000.gpu`) + `&gpu_zap_shader`，并通过设置 `msm.separate_gpu_kms = true` 让 `msm.ko` 在不与 `SimpleDRM` 冲突的前提下独立注册 **`/dev/dri/renderD128`**（`card1`）。
+- 成功加载本机 `qcom/a740_sqe.fw` 与 `qcom/gmu_gen70200.bin`（`GMU firmware v4.1.9`）。
+- **实测验收**：`eglinfo -B` 确认 **`OpenGL 4.6 (Core/Compat)` & `OpenGL ES 3.2` (`freedreno FD740`, Mesa 24.2.8)** 与 **Vulkan Turnip ICD** 全线就绪；`Weston 14` 图形桌面 + `weston-terminal` + `es2gears_wayland` 已在 6.7 英寸 `1080×2640@60Hz` OLED 屏幕上实机运行！
 
-### 3.4 Wi-Fi 6E & 蓝牙 5.3 (`QCA6490 / WCN6855`)
-- **Wi-Fi**：配置 PCIe0 (`&pcie0`) 与电源使能引脚，将本机 `/vendor/firmware/qca6490/` 固件部署至 `/lib/firmware/ath11k/WCN6855/hw2.1/`，加载 `ath11k_pci` 驱动连接 Wi-Fi。
-- **蓝牙**：配置對應 QUP UART 节点 (`bluetooth` / `qcom,wcn6855-bt`)，部署 `hpbtfw21.tlv` 与 `hpnv21.bin`，通过 `bluetoothctl` 连接蓝牙键鼠与蓝牙耳机。
+### 3.4 屏幕/触控电源 PMIC (`Samsung S2DOS05`) & 电池/充电 (`Maxim MAX77705`) — ✅ 已完成
+- **`S2DOS05` (`i2c-gpio` TLMM 20/21 @ `0x60`)**：主线 `sec-i2c` + `s2dos05-regulator` 一次绑定成功，5 路电压轨（`panel_vdd3` 1.8V、`tsp_iovdd_1p85` 1.85V、`tsp_avdd_3p3` 3.3V、`panel_vci` 3.0V、`panel_vddr` 1.8V）全部在线受控。
+- **`MAX77705` (`&i2c_hub_8` @ `0x66`/`0x69`/`0x36`, IRQ `TLMM GPIO 133`)**：为 `drivers/mfd/max77705.c` 增加 1 行放行 Z Flip 5 芯片修订版 `Rev.0x2` 补丁后，电池电量计与快充驱动全部点亮，实测实时上报电量百分比（`100%`）、电压（`4.326V`）、电流（`+95.3mA`）、温度（`37.5°C`）、循环次数（`135`）及 USB 快充在线状态。
 
-### 3.5 电池电量、充电与震动 (`Maxim MAX77705`)
-- 在对应 I2C 总线配置 `max77705@66`（中断 `TLMM GPIO 133`），启用主线 `max77705` MFD、Fuel Gauge、Charger 及 Haptic 子节点；
-- 验证 `/sys/class/power_supply/` 下能正确上报电池电压、电流与电量百分比，插拔充电器状态正常切换。
+### 3.5 蓝牙 5.3 & Wi-Fi 6E (`QCA6490 / WCN6855`) — 🟡 蓝牙已通，Wi-Fi 6E 剩最后 MSI 路由收尾
+- **蓝牙 5.3 (`&uart14` + `wcn6855-pmu`) — ✅ 已完成**：成功通过 `qcom,wcn6855-pmu` 上电并加载本机 `qca/hpbtfw21.tlv` + `qca/hpnv21g.bin`（`BTFW.HSP_C.2.1.c1-00092-PATCH2-1`），**`hci0` 已上线解锁**。
+- **Wi-Fi 6E (`&pcie0` + `ath11k_pci`) — 🔄 已打通 90%（剩余 GIC ITS Endpoint MSI 路由）**：
+  - 已打入三星 SM8550 专属 `phy-qcom-qmp-pcie.c` PIPE 时钟补丁、`pwrseq-qcom-wcn.c` 11 条 AOP QMP `qcom,wlan-pdc-init` 投票补丁与 `max-link-speed = <2>`（匹配原厂 `PCIe Gen.2 x1 5.0 GT/s`）；
+  - 实测 PCIe0 稳定建链识别 `01:00.0 [17cb:1103] wcn6855 hw2.1`，直接读取芯片 BAR0 寄存器确认 **SBL 已通过 PCIe DMA 零报错加载并进入 `MHI_STATE_READY`**（`BHI_STATUS = SUCCESS`、`BHI_ERRCODE = 0`、`MHI_STATUS = 0x101`）；
+  - 当前最后卡点已精准锁定为 `0000:01:00.0` 的 `ITS-PCI-MSI` 中断（`IRQ 193 bhi` 计数为 `0`），待后续排查 `pcie0` MSI 路由（或单 MSI 向量模式）即可点亮 `wlan0`。
 
 ---
 

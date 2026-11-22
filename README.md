@@ -15,6 +15,23 @@
 
 ---
 
+## 🚀 当前真机实测进度（Mainline Linux 7.3.5）
+
+| 模块 | 状态 | 实测详情 |
+|---|---|---|
+| **主线内核 & 启动链** | ✅ 已完成 | Linux 7.3.5 独立运行于 `recovery` 分区 (`sda23`)，日常 Android 14 启动链 0 改动 |
+| **持久化 Rootfs** | ✅ 已完成 | Alpine 3.21 (`aarch64`) 落盘 `/dev/sda29` (`/cache/pmos_root`)，不破坏 `/cache/recovery` |
+| **主屏显示 & 图形桌面** | ✅ 已完成 | `1080×2640@60Hz` OLED (`SimpleDRM`) + **Weston 14 Wayland 图形桌面** + `weston-terminal` |
+| **主屏 10 点触控** | ✅ 已完成 | 自研中断式内核驱动 [`drivers/synaptics_s3916_sec.c`](drivers/synaptics_s3916_sec.c)（`S3916A` SEC `0xC1` 16 字节协议，IRQ GPIO 19），Weston 实机触控流畅 |
+| **Adreno 740 3D GPU** | ✅ 已完成 | `msm.separate_gpu_kms=1` -> `/dev/dri/renderD128`，实测 `FD740` **OpenGL 4.6 / GLES 3.2 / Vulkan Turnip** + `GMU v4.1.9` |
+| **电池 / 充电 / 电量计** | ✅ 已完成 | `MAX77705` (`Rev.0x2` 补丁) 实时上报电量%、电压、电流、温度、循环次数与 USB 快充 |
+| **屏幕/触控 PMIC** | ✅ 已完成 | `Samsung S2DOS05` (`i2c-gpio` 20/21 @ `0x60`) 5 路电源轨全部在线 |
+| **蓝牙 5.3** | ✅ 已完成 | `WCN6855 / QCA6490` (`uart14`) 固件加载完成，`hci0` 在线 |
+| **USB 网卡 & SSH & UFS 4.0** | ✅ 已完成 | macOS 原生免驱 USB CDC-NCM (`scripts/ssh_b5q.sh`) + 512 GB UFS 4.0 + 全部物理按键 |
+| **Wi-Fi 6E (`ath11k_pci`)** | 🔄 调试收尾 | PCIe Gen 2 建链 + AOP QMP 投票 + SBL BHI 加载均已成功，剩余 `01:00.0` MSI 中断路由排查 |
+
+---
+
 ## 📂 仓库目录结构
 
 ```text

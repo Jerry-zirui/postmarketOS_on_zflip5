@@ -3,7 +3,7 @@
 # and opens a passwordless root SSH connection over IPv6 link-local (zero DHCP/IPv4 setup needed).
 set -euo pipefail
 
-IFACE=$(networksetup -listallhardwareports | awk '/Z Flip 5 Mainline Linux/{getline; print $2; exit}')
+IFACE=$(networksetup -listallhardwareports | awk '/Z Flip 5 .*Linux/{getline; print $2; exit}')
 if [[ -z "${IFACE:-}" ]]; then
   echo "[!] Z Flip 5 Mainline Linux USB Ethernet interface not found. Try replugging the USB cable." >&2
   exit 1
