@@ -28,7 +28,7 @@
 | **屏幕/触控 PMIC** | ✅ 已完成 | `Samsung S2DOS05` (`i2c-gpio` 20/21 @ `0x60`) 5 路电源轨全部在线 |
 | **蓝牙 5.3** | ✅ 已完成 | `WCN6855 / QCA6490` (`uart14`) 固件加载完成，`hci0` 在线 |
 | **USB 网卡 & SSH & UFS 4.0** | ✅ 已完成 | macOS 原生免驱 USB CDC-NCM (`scripts/ssh_b5q.sh`) + 512 GB UFS 4.0 + 全部物理按键 |
-| **Wi-Fi 6E (`ath11k_pci`)** | 🔄 调试收尾 | PCIe Gen 2 建链 + AOP QMP 投票 + SBL BHI 加载均已成功，剩余 `01:00.0` MSI 中断路由排查 |
+| **Wi-Fi 6E (`ath11k_pci`)** | ✅ 已完成 | `WCN6855 / QCA6490` (`01:00.0`) PCIe Gen 2 + `pmk8550_sleep_clk` + 4-cell `iommu-map` 绕过 7.3.5 `PARF_BDF_TO_SID` 步长 Bug -> **`wlan0` 在线（2.4/5/6 GHz 三频 HE PHY）**，实测实时扫描周边 AP |
 
 ---
 

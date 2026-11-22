@@ -146,7 +146,7 @@
 	wcn6855-pmu {
 		compatible = "qcom,wcn6855-pmu";
 
-		pinctrl-0 = <&bt_en_default>, <&wlan_en_default>, <&xo_clk_default>;
+		pinctrl-0 = <&bt_en_default>, <&wlan_en_default>, <&xo_clk_default>, <&pmk8550_sleep_clk>;
 		pinctrl-names = "default";
 
 		wlan-enable-gpios = <&tlmm 80 GPIO_ACTIVE_HIGH>;
@@ -785,6 +785,16 @@
 	pinctrl-0 = <&pcie0_default_state>;
 	pinctrl-names = "default";
 	max-link-speed = <2>;
+	/*
+	 * Workaround for Linux 7.3.5 qcom_pcie_config_sid_1_9_0() 4-cell
+	 * iommu-map stride bug: sm8550.dtsi switched to 5-cell entries
+	 * (#iommu-cells = <2>), causing PARF_BDF_TO_SID_TABLE_N to misparse
+	 * entry 1 and leave BDF 0x0100 (WCN6855) unmapped so its ITS MSIs
+	 * hit DeviceID 0x1400 instead of 0x1401. of_check_bad_map() accepts
+	 * legacy 4-cell entries cleanly.
+	 */
+	iommu-map = <0x0 &apps_smmu 0x1400 0x1>,
+		    <0x100 &apps_smmu 0x1401 0x1>;
 	status = "okay";
 };
 
@@ -818,6 +828,17 @@
 		power-source = <1>;
 		bias-pull-up;
 		input-enable;
+	};
+};
+
+&pmk8550_gpios {
+	pmk8550_sleep_clk: sleep-clk-state {
+		pins = "gpio3";
+		function = "func1";
+		input-disable;
+		output-enable;
+		bias-disable;
+		power-source = <0>;
 	};
 };
 

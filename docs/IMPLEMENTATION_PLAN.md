@@ -82,7 +82,7 @@ flowchart TD
 
 ---
 
-## Phase 3：核心交互外设与无线网络调通（✅ 核心交互全部点亮，Wi-Fi 6E 收尾中）
+## Phase 3：核心交互外设与无线网络调通（✅ 100% 全部完成！）
 
 在 Phase 2 SSH 终端可用的基础上，已完成主线 **Linux 7.3.5** + 持久化 **Alpine 3.21 (`aarch64`)** 桌面环境的全面点亮：
 
@@ -104,12 +104,12 @@ flowchart TD
 - **`S2DOS05` (`i2c-gpio` TLMM 20/21 @ `0x60`)**：主线 `sec-i2c` + `s2dos05-regulator` 一次绑定成功，5 路电压轨（`panel_vdd3` 1.8V、`tsp_iovdd_1p85` 1.85V、`tsp_avdd_3p3` 3.3V、`panel_vci` 3.0V、`panel_vddr` 1.8V）全部在线受控。
 - **`MAX77705` (`&i2c_hub_8` @ `0x66`/`0x69`/`0x36`, IRQ `TLMM GPIO 133`)**：为 `drivers/mfd/max77705.c` 增加 1 行放行 Z Flip 5 芯片修订版 `Rev.0x2` 补丁后，电池电量计与快充驱动全部点亮，实测实时上报电量百分比（`100%`）、电压（`4.326V`）、电流（`+95.3mA`）、温度（`37.5°C`）、循环次数（`135`）及 USB 快充在线状态。
 
-### 3.5 蓝牙 5.3 & Wi-Fi 6E (`QCA6490 / WCN6855`) — 🟡 蓝牙已通，Wi-Fi 6E 剩最后 MSI 路由收尾
-- **蓝牙 5.3 (`&uart14` + `wcn6855-pmu`) — ✅ 已完成**：成功通过 `qcom,wcn6855-pmu` 上电并加载本机 `qca/hpbtfw21.tlv` + `qca/hpnv21g.bin`（`BTFW.HSP_C.2.1.c1-00092-PATCH2-1`），**`hci0` 已上线解锁**。
-- **Wi-Fi 6E (`&pcie0` + `ath11k_pci`) — 🔄 已打通 90%（剩余 GIC ITS Endpoint MSI 路由）**：
-  - 已打入三星 SM8550 专属 `phy-qcom-qmp-pcie.c` PIPE 时钟补丁、`pwrseq-qcom-wcn.c` 11 条 AOP QMP `qcom,wlan-pdc-init` 投票补丁与 `max-link-speed = <2>`（匹配原厂 `PCIe Gen.2 x1 5.0 GT/s`）；
-  - 实测 PCIe0 稳定建链识别 `01:00.0 [17cb:1103] wcn6855 hw2.1`，直接读取芯片 BAR0 寄存器确认 **SBL 已通过 PCIe DMA 零报错加载并进入 `MHI_STATE_READY`**（`BHI_STATUS = SUCCESS`、`BHI_ERRCODE = 0`、`MHI_STATUS = 0x101`）；
-  - 当前最后卡点已精准锁定为 `0000:01:00.0` 的 `ITS-PCI-MSI` 中断（`IRQ 193 bhi` 计数为 `0`），待后续排查 `pcie0` MSI 路由（或单 MSI 向量模式）即可点亮 `wlan0`。
+### 3.5 蓝牙 5.3 & Wi-Fi 6E (`QCA6490 / WCN6855`) — ✅ 全部完成（`wlan0` + `hci0` 并发在线！）
+- **蓝牙 5.3 (`&uart14` + `wcn6855-pmu`) — ✅ 已完成**：成功通过 `qcom,wcn6855-pmu` 上电并加载本机 `qca/hpbtfw21.tlv` + `qca/hpnv21g.bin`（`BTFW.HSP_C.2.1.1.c1-00092-PATCHZ-1`），**`hci0` 已上线解锁**。
+- **Wi-Fi 6E (`&pcie0` + `ath11k_pci`) — ✅ 已完成（实机扫描 2.4/5/6 GHz AP）**：
+  - 打入三星 SM8550 专属 `phy-qcom-qmp-pcie.c` PIPE 时钟补丁、`pwrseq-qcom-wcn.c` 11 条 AOP QMP `qcom,wlan-pdc-init` 投票补丁、补齐 `pmk8550_sleep_clk` (PMK8550 GPIO 3 32.768 kHz 休眠时钟) 与 `max-link-speed = <2>`（匹配原厂 `PCIe Gen.2 x1 5.0 GT/s`）；
+  - **关键主线内核 Bug 定位与修复**：通过 `/dev/mem` 直接转储 PCIe0 `PARF_BDF_TO_SID_TABLE_N` 寄存器，发现 Linux 7.3.5 `qcom_pcie_config_sid_1_9_0()` 仍按 **4-cell 步长**解析已升级为 5-cell 的 `sm8550.dtsi` `iommu-map`，导致 `PARF+0x201c` 被写入垃圾值 `0xffed3b00` 且 WCN6855（BDF `01:00.0`）对应的 `PARF+0x2054` 为零，使其 GICv3 ITS MSI 中断全部误路由至 Root Port (`DeviceID 0x1400`)。在 `sm8550-samsung-b5q.dts` 的 `&pcie0` 中覆写 4-cell `iommu-map` 后，全部 32 路 MSI 中断（`bhi`/`mhi`/`ce0..ce8`/`DP_EXT_IRQ`）瞬间畅通；
+  - **实测验收**：`ath11k_pci` 仅用 0.78 秒完成 SBL/AMSS/M3 固件加载（`fw_version 0x11088c35`，`WLAN.HSP.1.1-03125`），注册 **`wlan0`**，完整开启 **2.4 GHz / 5 GHz / 6 GHz (Wi-Fi 6E HE PHY)** 三频并实机扫描出周边 2.4G/5G 热点，且与 `hci0` 蓝牙 5.3 完美并发！
 
 ---
 
