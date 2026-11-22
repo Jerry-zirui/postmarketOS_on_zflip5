@@ -115,10 +115,13 @@ flowchart TD
 
 ## Phase 4：原生 120Hz DRM 面板驱动、音频与 5G 移动网络
 
-### 4.1 主屏原生 DRM Panel 驱动 (`S6E3FAC` + `S2DOS05`)
-1. 在 I2C 总线配置 `s2dos05@60` PMIC 节点，接管面板 VCI / VDD3 / ELVDD / ELVSS 供电轨；
-2. 从 [`extracted_hw_info/fdt.dts`](../extracted_hw_info/fdt.dts) 中提取 `B5_S6E3FAC_AMF670BS03` 的 MIPI DSI 初始化与休眠指令流，编写 `panel-samsung-s6e3fac.c`；
-3. 从 `SimpleDRM` 切换到完整的 `msm_dpu` + `dsi0` 原生显示管线，实现 **120Hz 高刷新率**、**亮度无级调节** 以及 **锁屏彻底关闭屏幕电源省电**。
+### 4.1 主屏原生 120Hz DRM Panel 驱动 (`B5_S6E3FAC_AMF670BS03` + `S2DOS05` + `msm_dpu`) — ✅ 已完成！
+- [x] **只读提取本机原厂面板配置**：从 Android `super` (`/dev/sda26`) 的 `vendor` EROFS 分区无损提取了本机专属 [`extracted_hw_info/B5_S6E3FAC_AMF670BS03.dat`](../extracted_hw_info/B5_S6E3FAC_AMF670BS03.dat)（含完整 `POWER_ON_PRE/POST`、DSC 1.1 128 字节 PPS、`FFC 951Mbps`、`VRR 120Hz (RevC)`、`12-bit 0x51` 亮度与 `POWER_OFF` 指令流）；
+- [x] **编写主线 DRM 面板驱动**：[`drivers/panel-samsung-s6e3fac-b5q.c`](../drivers/panel-samsung-s6e3fac-b5q.c)（4-lane Command Mode、`1080×2640@120Hz`、DSC 1.1 2×`540×40` 8bpc→8bpp、GPIO 125 Reset、GPIO 86 `mdp_vsync` TE、`S2DOS05` 三路电源、`0..2047` 12-bit 背光控制）；
+- [x] **原生 8 核编译与实机点亮 (`Linux 7.3.5-b5q-p4`)**：开启 `CONFIG_DRM_MSM_DPU` + `CONFIG_DRM_MSM_DSI` + `CONFIG_DRM_MSM_DSI_7NM_PHY`，并将 `msm_dpu` 与 `Adreno 740` 融合至统一 DRM 节点（`/dev/dri/card1` + `card1-DSI-1` + `/sys/class/backlight/ae94000.dsi.0`）；
+- [x] **实机验收**：
+  - `kscreen-doctor -o` 确认 **`DSI-1 1080×2640@120Hz`** + 硬件亮度调节（实测 `1024/2047` 生效，0 报错）；
+  - `KWin 6` 合成器与全部 Wayland 客户端原生运行于 **`freedreno / FD740`（Adreno 740 零拷贝硬件 3D，Atomic Mode Setting）**，彻底告别 `llvmpipe` 烤机，待机 **CPU 0% / 100% idle**！
 
 ### 4.2 音频外放 (`WCD938x` + 双 `TFA9878`) 与 5G 基带
 1. 配置 ADSP/CDSP `remoteproc`，启用 `pd-mapper` 与 `tqftpserv`；

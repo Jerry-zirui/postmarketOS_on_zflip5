@@ -21,9 +21,10 @@
 |---|---|---|
 | **主线内核 & 启动链** | ✅ 已完成 | Linux 7.3.5 独立运行于 `recovery` 分区 (`sda23`)，支持三级自举（`sda37` 桌面 -> `sda29` 救援 -> initramfs SSH），日常 Android 14 启动链 0 改动；支持 `b5q-reboot [linux\|android\|download]` 免按键重启 |
 | **独立原生 Linux 分区** | ✅ 已完成 | UFS 4.0 无损重分区：**`334.3 GiB` 独立 `ext4` 分区 (`/dev/sda37`)** + `4 GiB` Swap，为 Android 14 保留 `128.0 GiB` (`/dev/sda36`)，保留 `/dev/sda29` 救援根文件系统 |
-| **KDE Plasma 6 桌面环境** | ✅ 已完成 | **KDE Plasma 6.2.4（Plasma Mobile + Plasma Desktop 双模式，`b5q-plasma-mode` 一键切换）** + SDDM 0.21 Wayland + `elogind` + `XWayland` + Maliit 虚拟键盘 + `2.5x` HiDPI + Noto CJK + Firefox 136 |
-| **主屏 10 点触控** | ✅ 已完成 | 自研中断式内核驱动 [`drivers/synaptics_s3916_sec.c`](drivers/synaptics_s3916_sec.c)（`S3916A` SEC `0xC1` 16 字节协议，IRQ GPIO 19），Plasma 6 / Weston 实机触控流畅 |
-| **Adreno 740 3D GPU** | ✅ 已完成 | `msm.separate_gpu_kms=1` -> `/dev/dri/renderD128`，实测 `FD740` **OpenGL 4.6 / GLES 3.2 / Vulkan Turnip** + `GMU v4.1.9`（Wayland 应用通过 `DRI_PRIME=1` 直接调用硬件 3D） |
+| **主屏显示（原生 120Hz DRM）** | ✅ 已完成 | 自研主线 DRM 面板驱动 [`drivers/panel-samsung-s6e3fac-b5q.c`](drivers/panel-samsung-s6e3fac-b5q.c)（`B5_S6E3FAC_AMF670BS03`）接入 `msm_dpu` + `mdss_dsi0` + 4nm PHY + **DSC 1.1**：**`DSI-1 1080×2640@120Hz`** 原生点亮，支持 **12-bit 硬件亮度无级调节（`0..2047`）** 与真息屏休眠 |
+| **KDE Plasma 6 桌面环境** | ✅ 已完成 | **KDE Plasma 6.2.4（Plasma Mobile + Plasma Desktop 双模式，`b5q-plasma-mode` 一键切换）** + SDDM 0.21 Wayland + `elogind` + `XWayland` + Maliit 虚拟键盘 + **KWin & Wayland 全程 Adreno 740 (`FD740`) 零拷贝 120Hz 硬件合成（待机 CPU 0%）** |
+| **主屏 10 点触控** | ✅ 已完成 | 硬件中断驱动 [`drivers/b5q_touchd.c`](drivers/b5q_touchd.c) + [`drivers/synaptics_s3916_sec.c`](drivers/synaptics_s3916_sec.c)（`i2c-gpio` GPIO 44/45 绕过 SM8550 `gpi_dma1` 丢包 Bug，TLMM GPIO 19 硬件中断，7 步全手势 0 丢包验收通过） |
+| **Adreno 740 3D GPU** | ✅ 已完成 | 与 `msm_dpu` 融合于统一 `/dev/dri/card1` + `renderD128`，实测 KWin 6 与所有 Wayland 应用原生 **`freedreno FD740` OpenGL 4.6 / GLES 3.2 / Vulkan Turnip** + `GMU v4.1.9` 全程硬件加速 |
 | **桌面应用生态** | ✅ 已完成 | **Flatpak 1.14.10**（已配置 Flathub + `xdg-desktop-portal-kde`）+ **Podman 5.3.2 (`crun` / `cgroups v2` / `overlay`)** + **Distrobox 1.8.0** 全线验证就绪 |
 | **电池 / 充电 / 电量计** | ✅ 已完成 | `MAX77705` (`Rev.0x2` 补丁) + `UPower` 实时上报电量%、电压、电流、温度、循环次数与 USB 快充 |
 | **屏幕/触控 PMIC** | ✅ 已完成 | `Samsung S2DOS05` (`i2c-gpio` 20/21 @ `0x60`) 5 路电源轨全部在线 |
