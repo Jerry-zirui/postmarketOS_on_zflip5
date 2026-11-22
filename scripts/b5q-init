@@ -1,0 +1,88 @@
+#!/bin/sh
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export HOME=/root
+export TERM=linux
+
+mountpoint -q /proc || mount -t proc proc /proc
+mountpoint -q /sys || mount -t sysfs sysfs /sys
+mountpoint -q /dev || mount -t devtmpfs devtmpfs /dev
+mkdir -p /dev/pts /dev/shm /run /tmp /sys/kernel/config /sys/fs/cgroup
+mountpoint -q /dev/pts || mount -t devpts devpts /dev/pts
+mountpoint -q /dev/shm || mount -t tmpfs tmpfs /dev/shm
+mountpoint -q /run || mount -t tmpfs tmpfs /run
+mountpoint -q /tmp || mount -t tmpfs tmpfs /tmp
+mountpoint -q /sys/kernel/config || mount -t configfs configfs /sys/kernel/config 2>/dev/null || true
+
+hostname -F /etc/hostname 2>/dev/null || hostname b5q-alpine
+
+exec </dev/tty0 >/dev/tty0 2>&1
+
+ip link set lo up 2>/dev/null || ifconfig lo 127.0.0.1 up
+ip addr add 172.16.42.1/24 dev usb0 2>/dev/null || ifconfig usb0 172.16.42.1 netmask 255.255.255.0 up 2>/dev/null || true
+ip link set usb0 up 2>/dev/null || true
+udhcpd /etc/udhcpd.conf 2>/dev/null &
+dropbear -R -B -p 22 2>/dev/null &
+
+/sbin/udevd --daemon 2>/dev/null || true
+udevadm trigger --action=add 2>/dev/null || true
+seatd -g video -u root 2>/dev/null &
+
+echo ""
+echo "=== [Alpine 3.21 Persistent Rootfs] ==="
+echo "[NET]  USB CDC-NCM UP -> 172.16.42.1 (Dropbear SSH :22)"
+
+echo "[MODS] Loading Adreno 740 GPU (msm)..."
+modprobe msm 2>&1 || echo "  (msm load warning)"
+
+echo "[MODS] Loading Wi-Fi 6E (ath11k_pci)..."
+modprobe ath11k_pci 2>&1 || echo "  (ath11k_pci load warning)"
+
+echo "[MODS] Loading Bluetooth 5.3 (hci_uart + btqca)..."
+modprobe btqca 2>&1 || true
+modprobe hci_uart 2>&1 || echo "  (hci_uart load warning)"
+
+echo "[MODS] Loading Synaptics S3916A Touchscreen..."
+modprobe synaptics_s3916_sec 2>&1 || true
+if ! grep -qi "Synaptics S3916A" /proc/bus/input/devices 2>/dev/null; then
+    sleep 1
+    rmmod synaptics_s3916_sec 2>/dev/null || true
+    modprobe synaptics_s3916_sec 2>&1 || true
+fi
+
+sleep 2
+ip link set wlan0 up 2>/dev/null || true
+(
+    sleep 2
+    if [ -f /etc/wpa_supplicant/wpa_supplicant.conf ]; then
+        wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf >/dev/null 2>&1
+        sleep 5
+        udhcpc -i wlan0 -q -t 10 >/dev/null 2>&1
+        ntpd -n -q -p ntp.aliyun.com >/dev/null 2>&1
+    fi
+) &
+
+echo ""
+echo "================ HARDWARE STATUS ================"
+echo "[CPU]  $(nproc) cores | $(uname -r)"
+echo "[RAM]  $(free -m | awk '/Mem:/ {print $3 "MB / " $2 "MB"}')"
+echo "[DISK] $(df -h / | awk 'NR==2 {print $3 " / " $2 " (" $4 " free)"}')"
+echo "[DRM]  $(ls /dev/dri 2>/dev/null | tr '\n' ' ')"
+echo "[PCI]  $(lspci 2>/dev/null | head -n 3 || echo none)"
+echo "[WIFI] $(iw dev 2>/dev/null | awk '/Interface/ {print $2}' | tr '\n' ' ')"
+echo "[BT]   $(ls /sys/class/bluetooth 2>/dev/null | tr '\n' ' ')"
+echo "[TSP]  $(grep -i "Synaptics S3916A" /proc/bus/input/devices 2>/dev/null | head -n 1 || echo none)"
+for ps in /sys/class/power_supply/*; do
+    [ -d "$ps" ] || continue
+    cap=$(cat "$ps/capacity" 2>/dev/null || echo "?")
+    st=$(cat "$ps/status" 2>/dev/null || echo "?")
+    volt=$(cat "$ps/voltage_now" 2>/dev/null || echo "?")
+    echo "[PWR]  $(basename "$ps"): status=$st cap=${cap}% uV=$volt"
+done
+echo "================================================="
+echo "[READY] SSH in from Mac with ./scripts/ssh_b5q.sh"
+echo ""
+
+while true; do
+    /bin/sh
+    sleep 1
+done

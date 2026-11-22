@@ -127,11 +127,17 @@ flowchart TD
 
 ---
 
-## Phase 5：桌面融合体验与生产力环境定型
+## Phase 5：桌面融合体验与生产力环境定型（✅ 100% 实机完成！）
 
-1. **桌面环境部署**：
-   - 使用 `pmbootstrap` 构建带有 **`systemd`** 的 **`postmarketOS edge`** 镜像；
-   - 预装 **`postmarketos-ui-gnome-mobile`**（完整版桌面 GNOME + 移动端自适应触控手势补丁）或 **`KDE Plasma 6`**（支持 `Plasma Mobile` 与 `Plasma Desktop` 一键切换）。
-2. **完整桌面软件生态 (`Flatpak` + `Distrobox`)**：
-   - 配置 `Flatpak` 获取主流 ARM64 Linux 桌面 GUI 应用；
-   - 部署 `Distrobox`（搭载 **Arch Linux ARM** 或 **Ubuntu ARM64** 容器），使得任何依赖 `glibc` 的桌面软件、开发编译工具链、VS Code 甚至 `Box64` / `FEX-Emu` 都能以原生 Wayland 窗口无缝运行。
+1. **UFS 4.0 独立原生 Linux 大分区与三级引导链**：
+   - 使用 `sgdisk` 在保持 `sda1`~`sda35` 零改动的前提下，将 512 GB UFS 4.0 划分为 **`128.0 GiB` Android 14 (`/dev/sda36`)** + **`334.3 GiB` 独立原生 Linux `ext4` (`/dev/sda37`)**（配备 `4 GiB` Swapfile）；
+   - 构建 [`scripts/build_initramfs_phase5_in_chroot.sh`](../scripts/build_initramfs_phase5_in_chroot.sh) 实现三级自动容灾引导：`Tier 1 /dev/sda37`（KDE Plasma 6 桌面）-> `Tier 2 /dev/sda29`（救援根文件系统）-> `Tier 3 initramfs`（Dropbear USB SSH）；
+   - 提供 `b5q-reboot [linux|android|download]` 通过 Linux `SYS_reboot(RESTART2)` 直接免按键切换进入 Linux / Android / Download Mode。
+2. **KDE Plasma 6 移动/桌面双模式实机运行**：
+   - 在 `/dev/sda37` 上安装完整 **KDE Plasma 6.2.4**（`plasma-mobile` + `plasma-desktop` + `kwin_wayland` + `XWayland` + `sddm 0.21` + `elogind` + `maliit-keyboard` + `NetworkManager` + `BlueZ` + `UPower` + `PipeWire` + `Firefox 136` + Noto CJK，共 759 个包，实机剩余 `304.3 GiB` 可用空间）；
+   - 配置 `SDDM` Wayland + `pam_elogind` 自动登录用户 `jerry`、OLED `2.5x` HiDPI 缩放、NetworkManager 开机自动连接 Wi-Fi，并提供 `b5q-plasma-mode [mobile|desktop|restart]` 一键切换手机触屏模式与完整桌面模式；
+   - 配置脚本见 [`scripts/configure_phase5_kde_on_phone.sh`](../scripts/configure_phase5_kde_on_phone.sh)。
+3. **完整桌面软件生态 (`Flatpak` + `Podman` + `Distrobox`)**：
+   - **Flatpak 1.14.10** + `Flathub` + `xdg-desktop-portal-kde` 验证就绪；
+   - **Podman 5.3.2**（无 root `crun` + `cgroups v2` + `overlayfs` 零警告）+ **Distrobox 1.8.0** 验证就绪，可随时拉取 Ubuntu / Arch Linux ARM 容器运行完整 `glibc` 桌面软件与开发工具链；
+   - Wayland 应用可通过 `DRI_PRIME=1` 直接调用 **Adreno 740 (`FD740`, OpenGL 4.6 / GLES 3.2 / Turnip Vulkan)** 硬件 3D 加速。

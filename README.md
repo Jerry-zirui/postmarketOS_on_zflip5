@@ -19,16 +19,17 @@
 
 | 模块 | 状态 | 实测详情 |
 |---|---|---|
-| **主线内核 & 启动链** | ✅ 已完成 | Linux 7.3.5 独立运行于 `recovery` 分区 (`sda23`)，日常 Android 14 启动链 0 改动 |
-| **持久化 Rootfs** | ✅ 已完成 | Alpine 3.21 (`aarch64`) 落盘 `/dev/sda29` (`/cache/pmos_root`)，不破坏 `/cache/recovery` |
-| **主屏显示 & 图形桌面** | ✅ 已完成 | `1080×2640@60Hz` OLED (`SimpleDRM`) + **Weston 14 Wayland 图形桌面** + `weston-terminal` |
-| **主屏 10 点触控** | ✅ 已完成 | 自研中断式内核驱动 [`drivers/synaptics_s3916_sec.c`](drivers/synaptics_s3916_sec.c)（`S3916A` SEC `0xC1` 16 字节协议，IRQ GPIO 19），Weston 实机触控流畅 |
-| **Adreno 740 3D GPU** | ✅ 已完成 | `msm.separate_gpu_kms=1` -> `/dev/dri/renderD128`，实测 `FD740` **OpenGL 4.6 / GLES 3.2 / Vulkan Turnip** + `GMU v4.1.9` |
-| **电池 / 充电 / 电量计** | ✅ 已完成 | `MAX77705` (`Rev.0x2` 补丁) 实时上报电量%、电压、电流、温度、循环次数与 USB 快充 |
+| **主线内核 & 启动链** | ✅ 已完成 | Linux 7.3.5 独立运行于 `recovery` 分区 (`sda23`)，支持三级自举（`sda37` 桌面 -> `sda29` 救援 -> initramfs SSH），日常 Android 14 启动链 0 改动；支持 `b5q-reboot [linux\|android\|download]` 免按键重启 |
+| **独立原生 Linux 分区** | ✅ 已完成 | UFS 4.0 无损重分区：**`334.3 GiB` 独立 `ext4` 分区 (`/dev/sda37`)** + `4 GiB` Swap，为 Android 14 保留 `128.0 GiB` (`/dev/sda36`)，保留 `/dev/sda29` 救援根文件系统 |
+| **KDE Plasma 6 桌面环境** | ✅ 已完成 | **KDE Plasma 6.2.4（Plasma Mobile + Plasma Desktop 双模式，`b5q-plasma-mode` 一键切换）** + SDDM 0.21 Wayland + `elogind` + `XWayland` + Maliit 虚拟键盘 + `2.5x` HiDPI + Noto CJK + Firefox 136 |
+| **主屏 10 点触控** | ✅ 已完成 | 自研中断式内核驱动 [`drivers/synaptics_s3916_sec.c`](drivers/synaptics_s3916_sec.c)（`S3916A` SEC `0xC1` 16 字节协议，IRQ GPIO 19），Plasma 6 / Weston 实机触控流畅 |
+| **Adreno 740 3D GPU** | ✅ 已完成 | `msm.separate_gpu_kms=1` -> `/dev/dri/renderD128`，实测 `FD740` **OpenGL 4.6 / GLES 3.2 / Vulkan Turnip** + `GMU v4.1.9`（Wayland 应用通过 `DRI_PRIME=1` 直接调用硬件 3D） |
+| **桌面应用生态** | ✅ 已完成 | **Flatpak 1.14.10**（已配置 Flathub + `xdg-desktop-portal-kde`）+ **Podman 5.3.2 (`crun` / `cgroups v2` / `overlay`)** + **Distrobox 1.8.0** 全线验证就绪 |
+| **电池 / 充电 / 电量计** | ✅ 已完成 | `MAX77705` (`Rev.0x2` 补丁) + `UPower` 实时上报电量%、电压、电流、温度、循环次数与 USB 快充 |
 | **屏幕/触控 PMIC** | ✅ 已完成 | `Samsung S2DOS05` (`i2c-gpio` 20/21 @ `0x60`) 5 路电源轨全部在线 |
-| **蓝牙 5.3** | ✅ 已完成 | `WCN6855 / QCA6490` (`uart14`) 固件加载完成，`hci0` 在线 |
+| **蓝牙 5.3** | ✅ 已完成 | `WCN6855 / QCA6490` (`uart14`) + `BlueZ` / `Bluedevil` 固件加载完成，`hci0` 在线 |
 | **USB 网卡 & SSH & UFS 4.0** | ✅ 已完成 | macOS 原生免驱 USB CDC-NCM (`scripts/ssh_b5q.sh`) + 512 GB UFS 4.0 + 全部物理按键 |
-| **Wi-Fi 6E (`ath11k_pci`)** | ✅ 已完成 | `WCN6855 / QCA6490` (`01:00.0`) PCIe Gen 2 + `pmk8550_sleep_clk` + 4-cell `iommu-map` 绕过 7.3.5 `PARF_BDF_TO_SID` 步长 Bug -> **`wlan0` 在线（2.4/5/6 GHz 三频 HE PHY）**，实测实时扫描周边 AP |
+| **Wi-Fi 6E (`ath11k_pci`)** | ✅ 已完成 | `WCN6855 / QCA6490` (`01:00.0`) + `pmk8550_sleep_clk` + 4-cell `iommu-map` + **`NFA725` (`iPA`) BDF** -> NetworkManager 开机自动联网，支持无线免线 SSH 直连 |
 
 ---
 
