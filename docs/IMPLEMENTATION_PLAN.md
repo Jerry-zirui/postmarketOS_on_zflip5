@@ -73,12 +73,12 @@ flowchart TD
    - 启用 `usb_1` (`dwc3@a600000`) 并强制设为 `dr_mode = "peripheral"`；
    - 通过 postmarketOS `initramfs` 启动 USB NCM/RNDIS 网卡 (`172.16.42.1`)，从 Mac 直接 `ssh user@172.16.42.1` 登录手机主线 Linux 终端。
 
-### 2.2 里程碑验收标准 (M1) — ✅ 已达成！
+### 2.2 里程碑验收标准 (M1 & M2) — ✅ Phase 2 全部完成！
 - [x] **主线 Linux 7.3.5 首次在直板 Z Flip 5 (`SM-F7310`) 上成功启动至 PID 1 `/init`**（通过独立 104.5 MB `recovery` 分区 Header v2 镜像，原生 8 核骁龙 8 Gen 2 编译，零修改日常 Android 14 启动链）；
 - [x] **主屏实时显示高清大字体 (`TER16x32`) 启动日志与欢迎页**（`1080×2640` `framebuffer@b8000000` + `cont_splash: splash_region@b8000000` + 50 路 RPMh 供电保活 + `initcall_blacklist=msg_init,of_platform_sync_state_init,icc_sync_state,regulator_init_complete` 彻底解决 SM8550 NoC 冻屏）；
-- [x] **USB 控制器 (`dwc3-qcom a600000.usb` + `usb_dp_qmpphy` PIPE 时钟) 与 macOS 免驱 USB CDC-NCM 网卡彻底打通**：Mac 原生识别为 `Hardware Port: Z Flip 5 Mainline Linux (b5q)` (`en5`)，与主线 Linux 7.3.5 (`fe80::bcce:96ff:fe54:c358%en5`) 双向 `ping6` 延迟仅 **1.7 ms，0% 丢包**；
-- [x] 电源键与音量加/减键 (`gpio-keys`) 驱动注册正常；
-- [ ] **Phase 2 收尾小步**：向 `initramfs` 补入 `dropbear` SSH 服务端与完整版 `busybox` (`udhcpd`)，并重新开启 512 GB UFS 4.0，实现 Mac 一键 `ssh root@172.16.42.1` 登录直板 Z Flip 5 主线 Linux 终端。
+- [x] **USB 控制器 (`dwc3-qcom a600000.usb` + `usb_dp_qmpphy` PIPE 时钟) 与 macOS 免驱 USB CDC-NCM 网卡彻底打通**：Mac 原生识别为 `Hardware Port: Z Flip 5 Mainline Linux (b5q)` (`en5`)，实现 **Mac 免密 `root` SSH 直连**（一键脚本 [`scripts/ssh_b5q.sh`](../scripts/ssh_b5q.sh)）；
+- [x] **512 GB UFS 4.0 闪存 (`sda1`~`sda36`, `475.9G`) 完整在线**，且 `/init` 启动时自动清除 `/dev/sda10` (`misc`) 的 `boot-recovery` 标志（随时 `reboot` 无缝回到 Android 14，无需再进 Download Mode）；
+- [x] **全部 8 核 CPU、6.8 GB RAM 与 3 颗物理按键** (`pmic_pwrkey`、`pmic_resin`、`gpio-keys`) 实测工作正常。
 
 ---
 
