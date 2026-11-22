@@ -99,7 +99,7 @@ mkdir -p "$ROOT/etc/sddm.conf.d" "$ROOT/var/lib/sddm"
 cat <<'EOF' > "$ROOT/etc/sddm.conf.d/10-b5q-autologin.conf"
 [General]
 DisplayServer=wayland
-GreeterEnvironment=QT_WAYLAND_SHELL_INTEGRATION=layer-shell,KWIN_DRM_DEVICES=/dev/dri/card0
+GreeterEnvironment=QT_WAYLAND_SHELL_INTEGRATION=layer-shell,KWIN_DRM_DEVICES=/dev/dri/card0,KWIN_COMPOSE=Q
 InputMethod=maliit-keyboard
 
 [Wayland]
@@ -122,6 +122,7 @@ export MOZ_ENABLE_WAYLAND=1
 export SDL_VIDEODRIVER=wayland
 export CLUTTER_BACKEND=wayland
 export KWIN_DRM_DEVICES=/dev/dri/card0
+export KWIN_COMPOSE=Q
 export LANG=zh_CN.UTF-8
 export LC_CTYPE=C.UTF-8
 EOF
@@ -130,6 +131,14 @@ cat <<'EOF' > "$ROOT/home/jerry/.config/kwinrc"
 [Wayland]
 InputMethod[$e]=/usr/share/applications/com.github.maliit.keyboard.desktop
 VirtualKeyboardEnabled=true
+
+[Plugins]
+blurEnabled=false
+contrastEnabled=false
+slideEnabled=false
+
+[Compositing]
+AnimationSpeed=3
 
 [Effect-overview]
 BorderActivate=9
