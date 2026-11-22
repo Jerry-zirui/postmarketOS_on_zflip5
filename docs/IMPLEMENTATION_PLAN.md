@@ -17,27 +17,27 @@ flowchart TD
 
 ---
 
-## Phase 0：协同开发环境搭建与安全基线备份
+## Phase 0：协同开发环境搭建与安全基线备份（✅ 已完成）
 
 ### 0.1 解决宿主机磁盘空间与大小写敏感限制
-1. **宿主机轻量 Linux ARM64 环境**：
-   - 在 Mac 上安装 **OrbStack** 或 **Lima**，创建 `aarch64` Linux 容器/虚拟机（内部为原生大小写敏感的 `ext4` 文件系统，直接利用 Apple A18 Pro 原生编译 `arm64` 内核，无需交叉编译）。
-   - 若宿主机空间紧张（当前剩余 ~17 GB），清理至 35 GB+ 或将大体积备份文件存放在手机端 `/data/local/linux_port/`（手机端剩余 **146 GB** UFS 4.0 空间）。
-2. **工具链准备**：
-   - 宿主机已就绪：`./platform-tools/adb`、`./platform-tools/fastboot`。
-   - Linux 环境内安装：`pmbootstrap`、`git`、`gcc`/`clang`、`dtc`、`mkbootimg`、`linux-mdss-dsi-panel-driver-generator` (`lmdpdg`)。
+- [x] **大小写敏感构建卷**：已创建并挂载动态稀疏卷 `build/pmos_case_sensitive.sparseimage` 至 `build/case_sensitive_ws`（`APFS (Case-sensitive)`），仅按实际写入占用空间，满足主线 Linux 内核源码检出要求。
+- [x] **本地工程工具链就绪**：
+  - `platform-tools/adb` & `platform-tools/fastboot`
+  - `tools/dtc` (Device Tree Compiler v1.8.1)
+  - [`tools/mkbootimg_v2.py`](../tools/mkbootimg_v2.py)（针对 `SM-F7310` `recovery` 分区定制的 Android Boot Image v2 打包器）
+  - [`scripts/restore_stock_partitions.sh`](../scripts/restore_stock_partitions.sh)（带 SHA256 校验的一键原厂分区恢复脚本）
+  - [`scripts/extract_key_dts_nodes.py`](../scripts/extract_key_dts_nodes.py)（关键外设 DTS 节点提取脚本，产物见 [`extracted_hw_info/key_nodes_extracted.dts`](../extracted_hw_info/key_nodes_extracted.dts)）
 
 ### 0.2 真机关键分区与专有固件提取备份（通过 Root ADB）
-在修改任何引导分区前，通过 `adb shell su -c` 在手机 `/sdcard/backup_b5q/` 备份以下关键分区并拉取核心镜像：
-- **必备份分区**：
-  - `boot`、`vendor_boot`、`dtbo`、`init_boot`（用于随时一键恢复原厂 Android 启动）
-  - `efs`、`sec_efs`、`modemst1`、`modemst2`、`fsg`（基带校准与 IMEI 数据，严禁损坏）
-- **固件包提取（用于制作 `firmware-samsung-b5q` 包）**：
-  - 从 `/vendor/firmware_mnt/image/` 与 `/vendor/firmware/` 打包提取：
-    - GPU：`a740_sqe.fw`、`gmu_gen70200.bin`
-    - Wi-Fi / 蓝牙：`qca6490/*`、`hpbtfw21.tlv`、`hpnv21*`
-    - 触控：`tsp_synaptics/s3916a_b5.bin`
-    - 协处理器与音频：`adsp.*`、`adsp_dtb.*`、`cdsp.*`、`cdsp_dtb.*`、`modem.*`、`tfa98xx.cnt`、`cs40l26*`
+- [x] **15 个核心分区三端备份**（已保存于手机 `/data/local/linux_port/backups/`、`/sdcard/backup_b5q/` 及宿主机 `backups/backup_b5q/`，校验和见 [`extracted_hw_info/BACKUP_SHA256SUMS.txt`](../extracted_hw_info/BACKUP_SHA256SUMS.txt)）：
+  - 引导与内核链：`boot.img` (96M)、`init_boot.img` (8M)、`vendor_boot.img` (96M)、`recovery.img` (105M)、`dtbo.img` (16M)、`vbmeta.img` (128K)、`vbmeta_system.img` (64K)、`abl.img` (4M)、`param.img` (10M)
+  - 基带与校准数据：`efs.img` (20M)、`sec_efs.img` (20M)、`modemst1.img` (3M)、`modemst2.img` (3M)、`fsg.img` (3M)、`fsc.img` (4K)
+- [x] **专有固件包提取 (`firmware-samsung-b5q.tar.gz`，23 MB)**：
+  - 已按主线 Linux `/lib/firmware/` 标准目录结构整理并归档至手机与宿主机 `backups/backup_b5q/firmware-samsung-b5q.tar.gz`，包含 Adreno 740 (`a740_sqe.fw`, `gmu_gen70200.bin`)、Wi-Fi 6E (`ath11k/WCN6855/hw2.1/*`)、蓝牙 (`qca/hpbtfw21.tlv`, `hpnv21*`)、主屏触控 (`tsp_synaptics/s3916a_b5.bin`)、音频/震动 (`tfa98xx.cnt`, `cs40l26*`) 及 ADSP/CDSP/Modem 固件。
+- [x] **关键引导镜像头解析（重大发现，见 [`extracted_hw_info/boot_images_layout.txt`](../extracted_hw_info/boot_images_layout.txt)）**：
+  - `boot.img` 为 GKI v4 格式（需配合 `init_boot` + `vendor_boot` + `dtbo` 四分区联动）；
+  - **`recovery.img` (`/dev/block/sda23`, 104.5 MB) 为完全独立的 Android Boot Image Header v2 格式**（`Page Size: 4096`, `Kernel Addr: 0x00008000`, `Ramdisk Addr: 0x02000000`, `Tags Addr: 0x01e00000`, `DTB Addr: 0x01f00000`, `Board: SRPWC09A007`），**单个镜像内同时包含独立的 Kernel + Ramdisk + DTB + Cmdline**！
+  - **直接工程收益**：我们可以保持原厂 `boot` 与 `vendor_boot` 分区 **100% 原封不动**，仅将 UniLoader 或主线 Linux 打包为 Header v2 镜像刷入独立的 `recovery` 分区。通过 `adb reboot recovery` 即可引导主线 Linux / UniLoader，任何时候普通重启均可直接回到日常 Android 14 系统。
 
 ---
 

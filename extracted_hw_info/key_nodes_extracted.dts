@@ -1,0 +1,681 @@
+// Extracted key hardware nodes from SM-F7310 runtime FDT
+
+// === SECTION: reserved-memory { ===
+    reserved-memory {
+        #address-cells = <0x2>;
+        #size-cells = <0x2>;
+        ranges;
+        phandle = <0x2da>;
+        kaslr_region {
+            reg = <0x0 0xb01ff000 0x0 0x1000>;
+            no-map = <0x0 0x0>;
+        };
+        uh_guest_region {
+            reg = <0x0 0xb1000000 0x0 0x3000000>;
+        };
+        uh_heap_region {
+            reg = <0x0 0xb0200000 0x0 0x40000>;
+        };
+        gunyah_hyp_region@80000000 {
+            no-map;
+            reg = <0x0 0x80000000 0x0 0xa00000>;
+            phandle = <0x2db>;
+        };
+        cpusys_vm_region@80a00000 {
+            no-map;
+            reg = <0x0 0x80a00000 0x0 0x400000>;
+            phandle = <0x7c>;
+        };
+        xbl_dt_log_merged@81a00000 {
+            no-map;
+            reg = <0x0 0x81a00000 0x0 0x260000>;
+            phandle = <0x2dc>;
+        };
+        aop_cmd_db_region@81c60000 {
+            compatible = "qcom,cmd-db";
+            no-map;
+            reg = <0x0 0x81c60000 0x0 0x20000>;
+            phandle = <0x2dd>;
+        };
+        aop_config_merged_region@81c80000 {
+            no-map;
+            reg = <0x0 0x81c80000 0x0 0x74000>;
+            phandle = <0x2de>;
+        };
+        chipinfo_region@81cf4000 {
+            no-map;
+            reg = <0x0 0x81cf4000 0x0 0x1000>;
+            phandle = <0x2df>;
+        };
+        smem_region@81d00000 {
+            no-map;
+            reg = <0x0 0x81d00000 0x0 0x200000>;
+            phandle = <0x5f>;
+        };
+        adsp_mhi_region@81f00000 {
+            no-map;
+            reg = <0x0 0x81f00000 0x0 0x20000>;
+            phandle = <0x2e0>;
+        };
+        global_sync_region@82600000 {
+            no-map;
+            reg = <0x0 0x82600000 0x0 0x100000>;
+            phandle = <0x2e1>;
+            status = "disabled";
+        };
+        tz_stat_region@82700000 {
+            no-map;
+            reg = <0x0 0x82700000 0x0 0x100000>;
+            phandle = <0x2e2>;
+        };
+        mpss_region@89800000 {
+            no-map;
+            reg = <0x0 0x8a800000 0x0 0x10800000>;
+            phandle = <0x75>;
+        };
+        q6_mpss_dtb_region@9b000000 {
+            no-map;
+            reg = <0x0 0x9b000000 0x0 0x80000>;
+            phandle = <0x76>;
+        };
+        ipa_fw_region@9b080000 {
+            no-map;
+            reg = <0x0 0x9b080000 0x0 0x10000>;
+            phandle = <0x2e3>;
+        };
+        ipa_gsi_region@9b090000 {
+            no-map;
+            reg = <0x0 0x9b090000 0x0 0xa000>;
+            phandle = <0x2e4>;
+        };
+        gpu_micro_code_region@9b09a000 {
+            no-map;
+            reg = <0x0 0x9b09a000 0x0 0x2000>;
+            phandle = <0x2e5>;
+        };
+        spss_region_region@9b100000 {
+            no-map;
+            reg = <0x0 0x9b100000 0x0 0x180000>;
+            phandle = <0x43>;
+        };
+        spu_tz_shared_mem@9b280000 {
+            no-map;
+            reg = <0x0 0x9b280000 0x0 0x60000>;
+            phandle = <0x1e9>;
+        };
+        spu_modem_shared_mem@9b2e0000 {
+            no-map;
+            reg = <0x0 0x9b2e0000 0x0 0x20000>;
+            phandle = <0x1e8>;
+        };
+        camera_region@9b300000 {
+            no-map;
+            reg = <0x0 0x9b300000 0x0 0x800000>;
+            phandle = <0x2e6>;
+        };
+        video_region@9bb00000 {
+            no-map;
+            reg = <0x0 0x9bb00000 0x0 0x700000>;
+            phandle = <0x2e7>;
+        };
+        cvp_region@9c200000 {
+            no-map;
+            reg = <0x0 0x9c200000 0x0 0x700000>;
+            phandle = <0x2b2>;
+        };
+        cdsp_region@9c900000 {
+            no-map;
+            reg = <0x0 0x9c900000 0x0 0x2000000>;
+            phandle = <0x6f>;
+        };
+        q6_cdsp_dtb_region@9e900000 {
+            no-map;
+            reg = <0x0 0x9e900000 0x0 0x80000>;
+            phandle = <0x70>;
+        };
+        q6_adsp_dtb_region@9e980000 {
+            no-map;
+            reg = <0x0 0x9e980000 0x0 0x80000>;
+            phandle = <0x6b>;
+        };
+        adspslpi_region@9ea00000 {
+            no-map;
+            reg = <0x0 0x9ea00000 0x0 0x59b4000>;
+            phandle = <0x6a>;
+        };
+        mpss_dsm_region@d4d00000 {
+            no-map;
+            reg = <0x0 0xd4d00000 0x0 0x3300000>;
+            phandle = <0x78>;
+        };
+        xbl_sc_region@d8100000 {
+            no-map;
+            reg = <0x0 0xd8100000 0x0 0x40000>;
+            phandle = <0x2e8>;
+        };
+        cpucp_fw_region@d8140000 {
+            no-map;
+            reg = <0x0 0xd8140000 0x0 0x1c0000>;
+            phandle = <0x2e9>;
+        };
+        qtee_region@d8300000 {
+            no-map;
+            reg = <0x0 0xd8300000 0x0 0x500000>;
+            no-memsize;
+            phandle = <0x2ea>;
+        };
+        hwfence-shmem {
+            no-map;
+            reg = <0x0 0xe6440000 0x0 0x2dd000>;
+            phandle = <0x2eb>;
+            status = "disabled";
+        };
+        trust_ui_vm_region@f3800000 {
+            no-map;
+            reg = <0x0 0xf3800000 0x0 0x40ee000>;
+            phandle = <0x7b>;
+        };
+        trust_ui_vm_dump@0xf78ee000 {
+            no-map;
+            reg = <0x0 0xf78ee000 0x0 0x1000>;
+            phandle = <0x35>;
+        };
+        trust_ui_vm_qrtr@0xf78ef000 {
+            no-map;
+            reg = <0x0 0xf78ef000 0x0 0x9000>;
+            phandle = <0x64>;
+        };
+        trust_ui_vm_vblk0_ring@0xf78f8000 {
+            no-map;
+            reg = <0x0 0xf78f8000 0x0 0x4000>;
+            gunyah-label = <0x11>;
+            phandle = <0x7e>;
+        };
+        trust_ui_vm_vblk1_ring@0xf78fc000 {
+            no-map;
+            reg = <0x0 0xf78fc000 0x0 0x4000>;
+            gunyah-label = <0x10>;
+            phandle = <0x7f>;
+        };
+        trust_ui_vm_swiotlb@0xf7900000 {
+            no-map;
+            reg = <0x0 0xf7900000 0x0 0x100000>;
+            gunyah-label = <0x12>;
+            phandle = <0x80>;
+        };
+        llcc_lpi_region@ff800000 {
+            no-map;
+            reg = <0x0 0xff800000 0x0 0x600000>;
+            phandle = <0x2ec>;
+        };
+        va_md_mem_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            size = <0x0 0x1000000>;
+            phandle = <0x48>;
+        };
+        sp_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0x1000000>;
+            phandle = <0x1e7>;
+        };
+        cdsp_eva_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0xc00000>;
+            phandle = <0x2b3>;
+        };
+        adsp_heap_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0xc00000>;
+            phandle = <0x66>;
+        };
+        user_contig_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0x1000000>;
+            phandle = <0x3f>;
+        };
+        qseecom_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0x1c00000>;
+            phandle = <0x3d>;
+        };
+        secure_cdsp_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0xc00000>;
+            phandle = <0x1e6>;
+        };
+        non_secure_display_region {
+            compatible = "shared-dma-pool";
+            reusable;
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            size = <0x0 0xa400000>;
+            alignment = <0x0 0x400000>;
+            phandle = <0x1e4>;
+        };
+        demura_heap_region {
+            compatible = "shared-dma-pool";
+            reusable;
+            alloc-ranges = <0x1 0x0 0xfffffffe 0xffffffff>;
+            size = <0x0 0x2800000>;
+            alignment = <0x0 0x400000>;
+            phandle = <0x1e5>;
+        };
+        qseecom_ta_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0x3000000>;
+            phandle = <0x3e>;
+        };
+        qmc_dma_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0x1000000>;
+            phandle = <0x49>;
+        };
+        ramoops_region {
+            compatible = "ramoops";
+            alloc-ranges = <0x0 0x0 0xffffffff 0xffffffff>;
+            size = <0x0 0x200000>;
+            pmsg-size = <0x200000>;
+            mem-type = <0x2>;
+            phandle = <0x2ed>;
+            status = "disabled";
+        };
+        audio_cma_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0x1c00000>;
+            phandle = <0x1ea>;
+            status = "disabled";
+        };
+        sdsp_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0x800000>;
+            phandle = <0x1eb>;
+            status = "disabled";
+        };
+        linux,cma {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0x2000000>;
+            linux,cma-default;
+            phandle = <0x77>;
+        };
+        debug_kinfo_region {
+            alloc-ranges = <0x0 0x0 0xffffffff 0xffffffff>;
+            size = <0x0 0x1000>;
+            no-map;
+            phandle = <0xdb>;
+            status = "disabled";
+        };
+        mem_dump_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x1 0x0 0xfffffffe 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0x3400000>;
+            phandle = <0x1e3>;
+        };
+        splash_region {
+            reg = <0x0 0xb8000000 0x0 0x2b00000>;
+            label = "cont_splash_region";
+            phandle = <0x6ad>;
+        };
+        demura_region_0 {
+            reg = <0x0 0x0 0x0 0x0>;
+            label = "demura hfc region 0";
+            phandle = <0x6ae>;
+        };
+        demura_region_1 {
+            reg = <0x0 0x0 0x0 0x0>;
+            label = "demura hfc region 1";
+            phandle = <0x6af>;
+        };
+        sec_xbl_ramdump@A7D00000 {
+            no-map;
+            reg = <0x0 0xa7d00000 0x0 0x300000>;
+            phandle = <0x6d7>;
+        };
+        sec_debug_region_pool@880100000 {
+            compatible = "samsung,carve-out";
+            reg = <0x8 0x80100000 0x0 0xff000>;
+            phandle = <0x5ac>;
+        };
+        sec_rst_ex_info_region@8801FF000 {
+            compatible = "samsung,carve-out";
+            no-map;
+            reg = <0x8 0x801ff000 0x0 0x1000>;
+            phandle = <0x5b1>;
+        };
+        sec_log_buf_region@880200000 {
+            compatible = "samsung,carve-out";
+            reg = <0x8 0x80200000 0x0 0x200000>;
+            phandle = <0x5ad>;
+        };
+        sec_debug_bl_region@880400000 {
+            compatible = "samsung,carve-out";
+            no-map;
+            reg = <0x8 0x80400000 0x0 0x500000>;
+            phandle = <0x6db>;
+        };
+        sec_pmsg_region@880900000 {
+            compatible = "samsung,carve-out";
+            reg = <0x8 0x80900000 0x0 0x200000>;
+            phandle = <0x5af>;
+        };
+        google_debug_kinfo_region@880B00000 {
+            compatible = "samsung,carve-out";
+            no-map;
+            reg = <0x8 0x80b00000 0x0 0x1000>;
+            phandle = <0x5ab>;
+        };
+        sec_qcom_rdx_bootdev_region@880C00000 {
+            compatible = "samsung,carve-out";
+            reg = <0x8 0x80c00000 0x0 0xad00000>;
+            phandle = <0x5b2>;
+        };
+        hdm_region@880B01000 {
+            compatible = "removed-dma-pool";
+            no-map;
+            reg = <0x8 0x80b01000 0x0 0x1000>;
+            phandle = <0x5ae>;
+        };
+        rbin {
+            size = <0x0 0x19000000>;
+            expand_size = <0x0 0x1f400000>;
+            alloc-ranges = <0x8 0x80000000 0x1 0x80000000 0x0 0x80000000 0x0 0x80000000>;
+            alignment = <0x0 0x2000000>;
+            reusable;
+            phandle = <0x5b3>;
+        };
+        cnss_wlan_region {
+            compatible = "shared-dma-pool";
+            alloc-ranges = <0x0 0x0 0x0 0xffffffff>;
+            reusable;
+            alignment = <0x0 0x400000>;
+            size = <0x0 0x2000000>;
+            phandle = <0x5f8>;
+        };
+    };
+
+
+// === SECTION: s2dos05_pmic@60 { ===
+        s2dos05_pmic@60 {
+            compatible = "samsung,s2dos05pmic";
+            reg = <0x60>;
+            s2dos05,wakeup;
+            pinctrl-names = "default";
+            pinctrl-0 = <0x570>;
+            sec_disp_pmic_name = "disp_pmic";
+            s2dos05,s2dos05_int = <0x7d 0xbb 0x0>;
+            adc_mode = <0x0>;
+            adc_sync_mode = <0x2>;
+            ocl_elvss = <0x0>;
+            regulators {
+                s2dos05-buck1 {
+                    regulator-name = "panel_vddr";
+                    regulator-min-microvolt = <0xcf850>;
+                    regulator-max-microvolt = <0x200b20>;
+                    regulator-boot-on;
+                    phandle = <0x6b9>;
+                };
+                s2dos05-ldo1 {
+                    regulator-name = "panel_vdd3";
+                    regulator-min-microvolt = <0x16e360>;
+                    regulator-max-microvolt = <0x1e8480>;
+                    regulator-boot-on;
+                    phandle = <0x6ba>;
+                };
+                s2dos05-ldo2 {
+                    regulator-name = "s2dos05-l2";
+                    regulator-min-microvolt = <0x1c3a90>;
+                    regulator-max-microvolt = <0x1c3a90>;
+                    phandle = <0x5a6>;
+                };
+                s2dos05-ldo3 {
+                    regulator-name = "s2dos05-l3";
+                    regulator-min-microvolt = <0x325aa0>;
+                    regulator-max-microvolt = <0x325aa0>;
+                    phandle = <0x5a7>;
+                };
+                s2dos05-ldo4 {
+                    regulator-name = "panel_vci";
+                    regulator-min-microvolt = <0x2932e0>;
+                    regulator-max-microvolt = <0x399a18>;
+                    regulator-boot-on;
+                    phandle = <0x6bb>;
+                };
+                s2dos05-elvss-ssd {
+                    regulator-name = "panel_elvss";
+                    regulator-min-microamp = <0x0>;
+                    regulator-max-microamp = <0x1f40>;
+                    phandle = <0x6bc>;
+                };
+                s2dos05-avdd-elvdd-elvss-fd {
+                    regulator-name = "panel_aee_fd";
+                    phandle = <0x6bd>;
+                };
+            };
+        };
+
+
+// === SECTION: i2c@a90000 { ===
+            i2c@a90000 {
+                compatible = "qcom,i2c-geni";
+                reg = <0xa90000 0x4000>;
+                #address-cells = <0x1>;
+                #size-cells = <0x0>;
+                interrupts = <0x0 0x165 0x4>;
+                clock-names = "se-clk";
+                clocks = <0x3b 0x65>;
+                interconnect-names = "qup-core", "qup-config", "qup-memory";
+                interconnects = <0x1ec 0x25 0x1ec 0x23e 0x57 0x2 0x58 0x21d 0x5c 0x7 0x41 0x200>;
+                pinctrl-names = "default", "sleep";
+                pinctrl-0 = <0x5a8 0x5a9>;
+                pinctrl-1 = <0x5aa>;
+                dmas = <0x1f3 0x0 0x4 0x3 0x40 0x2 0x1f3 0x1 0x4 0x3 0x40 0x2>;
+                dma-names = "tx", "rx";
+                status = "ok";
+                phandle = <0x485>;
+                qcom,i2c-touch-active = "goodix,gt9916";
+                qcom,la-vm;
+                goodix-berlin@5d {
+                    compatible = "goodix,gt9916";
+                    reg = <0x5d>;
+                    interrupt-parent = <0x7d>;
+                    interrupts = <0x19 0x2008>;
+                    goodix,reset-gpio = <0x7d 0x18 0x0>;
+                    goodix,irq-gpio = <0x7d 0x19 0x2008>;
+                    goodix,irq-flags = <0x2>;
+                    goodix,panel-max-x = <0x438>;
+                    goodix,panel-max-y = <0x960>;
+                    goodix,panel-max-w = <0xff>;
+                    goodix,panel-max-p = <0x1000>;
+                    goodix,firmware-name = "goodix_firmware_i2c.bin";
+                    goodix,config-name = "goodix_cfg_group_i2c.bin";
+                    goodix,avdd-name = "avdd";
+                    goodix,iovdd-name = "iovdd";
+                    invert_xy;
+                    avdd-supply = <0x303>;
+                    iovdd-supply = <0x2d>;
+                    goodix,touch-type = "primary";
+                    goodix,qts_en;
+                    qts,trusted-touch-mode = "vm_mode";
+                    qts,touch-environment = "pvm";
+                    qts,trusted-touch-type = "primary";
+                    qts,trusted-touch-spi-irq = <0x239>;
+                    qts,trusted-touch-io-bases = <0xa90000>;
+                    qts,trusted-touch-io-sizes = <0x1000>;
+                    qts,trusted-touch-vm-gpio-list = <0x7d 0x2c 0x0 0x7d 0x2d 0x0 0x7d 0x2e 0x0 0x7d 0x2f 0x0 0x7d 0x18 0x0 0x7d 0x19 0x2008>;
+                    status = "disabled";
+                };
+                touchscreen@20 {
+                    status = "ok";
+                    compatible = "synaptics,synaptics_ts";
+                    reg = <0x20>;
+                    pinctrl-names = "on_state", "off_state";
+                    pinctrl-0 = <0x5a4>;
+                    pinctrl-1 = <0x5a5>;
+                    tsp_io_ldo-supply = <0x5a6>;
+                    tsp_avdd_ldo-supply = <0x5a7>;
+                    sec,irq_gpio = <0x7d 0x13 0x0>;
+                    sec,max_coords = <0x1000 0x1000>;
+                    sec,ss_touch_num = <0x1>;
+                    sec,area-size = <0x85 0x10a 0x155>;
+                    sec,tclm_level = <0x2>;
+                    sec,afe_base = <0x6>;
+                    support_dex_mode;
+                    support_mis_calibration_test;
+                    support_ear_detect_mode;
+                    support_open_short_test;
+                    support_vbus_notifier;
+                    support_refresh_rate_mode;
+                    enable_settings_aot;
+                    sec,enable_sysinput_enabled;
+                    sec,dump_ic_ver = <0x1>;
+                    sec,firmware_name = "tsp_synaptics/s3916a_b5.bin";
+                    sec,multi_device_count = <0x1>;
+                    sec,bringup = <0x0>;
+                    synaptics,tcm_drv_name = "synaptics_tcm_i2c";
+                    synaptics,tcm_dev_name = "tcm_i2c";
+                    synaptics,fw_delay = <0x7d0 0x32>;
+                    synaptics,support_immediate_cmd;
+                    sec_cmd,not_support_cmds = "clear_cover_mode", "pocket_mode_enable", "rawdata_init", "low_sensitivity_mode_enable", "set_always_lpm";
+                    trusted-touch-mode = "vm_mode";
+                    touch-environment = "pvm";
+                    trusted-touch-type = "primary";
+                    trusted-touch-spi-irq = <0x23b>;
+                    trusted-touch-io-bases = <0xf12c000 0xf12d000 0xf113000 0xa90000 0xa10000>;
+                    trusted-touch-io-sizes = <0x1000 0x1000 0x1000 0x1000 0x4000>;
+                    phandle = <0x6d4>;
+                };
+            };
+
+
+// === SECTION: max77705@66 { ===
+                max77705@66 {
+                    status = "okay";
+                    compatible = "maxim,max77705";
+                    reg = <0x66>;
+                    pinctrl-names = "default";
+                    pinctrl-0 = <0x582>;
+                    max77705,irq-gpio = <0x7d 0x85 0x1>;
+                    max77705,wakeup;
+                    max77705,fw_product_id = <0xd>;
+                    max77705,extra_fw_enable = <0x0>;
+                    max77705,support-audio;
+                    max77705,bc1p2_retry_count = <0x2>;
+                    max77705,siso_ovp = <0x0>;
+                    phandle = <0x6c5>;
+                    max77705_pdic {
+                        status = "okay";
+                        compatible = "maxim,max77705_pdic";
+                        support_pd_role_swap;
+                    };
+                    max77705_vibrator {
+                        status = "okay";
+                        compatible = "maxim,max77705_vibrator";
+                        pinctrl-names = "default", "sleep";
+                        pinctrl-0 = <0x583>;
+                        pinctrl-1 = <0x584>;
+                        haptic,multi_frequency = <0x7>;
+                        haptic,motor_type = "LINEAR_0832RC";
+                        haptic,frequency = <0x79e 0x802 0x802 0x802 0x802 0x802 0x802>;
+                        haptic,fold_open_frequency = <0x79e 0x802 0x802 0x802 0x802 0x802 0x802>;
+                        haptic,fold_close_frequency = <0x7e4 0x7e4 0x7e4 0x7e4 0x7e4 0x7e4 0x7e4>;
+                        haptic,normal_ratio = <0x4c>;
+                        haptic,overdrive_ratio = <0x5f>;
+                        haptic,high_temp_ratio = <0x40>;
+                        haptic,high_temp_ref = <0x30>;
+                        haptic,fold_open_ratio = <0x4c>;
+                        haptic,fold_close_ratio = <0x4d>;
+                        pwms = <0x585 0x0 0xf4240>;
+                    };
+                };
+
+
+// === SECTION: tfa98xx@34 { ===
+                tfa98xx@34 {
+                    phandle = <0x851>;
+                    inchannel = <0x1>;
+                    reset-gpio = <0x7d 0x0 0x0>;
+                    pinctrl-0 = <0x7b7>;
+                    pinctrl-names = "default";
+                    reg = <0x34>;
+                    compatible = "tfa,tfa98xx";
+                };
+
+
+// === SECTION: tfa98xx@35 { ===
+                tfa98xx@35 {
+                    phandle = <0x852>;
+                    inchannel = <0x0>;
+                    reg = <0x35>;
+                    compatible = "tfa,tfa98xx";
+                };
+
+
+// === SECTION: gpio_keys { ===
+        gpio_keys {
+            compatible = "gpio-keys";
+            label = "gpio_keys_flex";
+            pinctrl-names = "default";
+            pinctrl-0 = <0x547>;
+            vol_up {
+                label = "volume_up";
+                gpios = <0x525 0x6 0x1>;
+                linux,input-type = <0x1>;
+                linux,code = <0x73>;
+                gpio-key,wakeup;
+                debounce-interval = <0xf>;
+                linux,can-disable;
+            };
+        };
+
+
+// === SECTION: S6E3FAC_AMF670BS03 ===
+        bootargs = "loglevel=6 kpti=0 log_buf_len=256K kernel.panic_on_rcu_stall=1 service_locator.enable=1 msm_rtb.filter=0x237 rcupdate.rcu_expedited=1 rcu_nocbs=0-7 swiotlb=noforce loop.max_part=7 fw_devlink.strict=1 allow_mismatched_32bit_el0 cpufreq.default_governor=performance printk.console_no_auto_verbose=1 kasan=off sysctl.kernel.sched_pelt_multiplier=4 can.stats_timer=0 pcie_ports=compat irqaffinity=0-2 disable_dma32=on no-steal-acc cgroup.memory=nokmem,nosocket video=vfb:640x400,bpp=32,memsize=3072000 printk.devkmsg=on firmware_class.path=/vendor/firmware_mnt/image bootconfig loop.max_part=7  msm_drm.dsi_display0=B5_S6E3FAC_AMF670BS03: msm_drm.dsi_display1=B5_S6E3FC5_AMB338EH01: msm_drm.lcd_id=810012 sec_common_fn.lcd_id=810012 msm_drm.lcd_id1=800005 sec_common_fn.lcd_id1=800005 console=null nokaslr watchdog.stop_on_reboot=0 softdog.soft_panic=1 sec_vibrator_inputff_module.vib_le_est=0 common_muic.muic_param_pdic_info=1 common_muic.muic_param_pmic_info=3 pdic_notifier_module.pdic_param_lpcharge=0 nfc_sec.nfc_param_lpcharge=0 flicker_sensor.flicker_param_lpcharge=0 common_muic.muic_param_afc_mode=0x30 sec-battery.charging_mode=0x3030 sec-battery.pd_disable=0x00 abc.qet_loaded=0 mesh_qc.kq_mesh_drv_loading=0x0 sb-mfc.wireless_ic=0x38301D20 p9320_charger.wireless_ic=0x38301D20 s2miw04_charger.wireless_ic=0x38301D20 cps4038_charger.wireless_ic=0x38301D20 nu1668_charger.wireless_ic=0x38301D20 msm_rtb.enable=0 nowatchdog sec-battery.sales_code=TGY sec_sysup.edtbo_ver=-1 sapa=0 sec_pon_alarm.rtcalarm=0 sec_pon_alarm.lpcharge=0 hdm.status=NONE frpc-adsprpc.signoff=0x7277";
+        stdout-path = "/soc/qcom,qupv3_1_geni_se@ac0000/qcom,qup_uart@a9c000";
+        phandle = <0x2d9>;
+    };
+    reserved-memory {
+        #address-cells = <0x2>;
+        #size-cells = <0x2>;
+        ranges;
+        phandle = <0x2da>;
+        kaslr_region {
+            reg = <0x0 0xb01ff000 0x0 0x1000>;
+            no-map = <0x0 0x0>;
+        };
+
+

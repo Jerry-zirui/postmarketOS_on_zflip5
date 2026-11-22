@@ -1,9 +1,12 @@
 # Local host tools & binaries
 /platform-tools/
+/tools/dtc
+/backups/
 *.zip
 *.tar
 *.tar.gz
 *.tar.xz
+*.sparseimage
 
 # Large raw partition images / firmware dumps
 *.img
