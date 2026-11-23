@@ -169,22 +169,50 @@ cat <<'EOF' > "$ROOT/usr/local/bin/b5q-plasma-mode"
 #!/bin/sh
 MODE="${1:-status}"
 CONF="/etc/sddm.conf.d/10-b5q-autologin.conf"
+
+kill_user_procs() {
+    SIG="$1"
+    for p in $(ps -o pid,user | awk '$2=="jerry" {print $1}'); do
+        kill -"$SIG" "$p" 2>/dev/null || true
+    done
+}
+
+restart_session() {
+    # 1. Freeze sddm so it neither exits (triggering PID 1's 2s respawn)
+    #    nor spawns an intermediate autologin session while we tear down.
+    killall -STOP sddm 2>/dev/null || true
+    # 2. Gracefully stop sddm-helper and all user session processes (incl. kwin_wayland_wr / dbus / portals).
+    killall -TERM sddm-helper 2>/dev/null || true
+    kill_user_procs TERM
+    for i in 1 2 3 4 5; do
+        pidof kwin_wayland sddm-helper >/dev/null 2>&1 || break
+        sleep 1
+    done
+    killall -KILL sddm-helper 2>/dev/null || true
+    kill_user_procs KILL
+    loginctl terminate-user jerry 2>/dev/null || true
+    rm -f /run/user/1000/wayland-0 /run/user/1000/wayland-0.lock 2>/dev/null || true
+    sleep 1
+    # 3. Terminate frozen sddm; PID 1 supervisor cleanly spawns one fresh sddm after 2s.
+    killall -KILL sddm 2>/dev/null || true
+}
+
 case "$MODE" in
     mobile)
         echo "mobile" > /etc/b5q-session
         sed -i 's/^Session=.*/Session=plasma-mobile/' "$CONF"
         echo "[b5q] Switched KDE Plasma 6 session mode to: plasma-mobile"
-        killall sddm sddm-helper startplasma-wayland plasma_session kwin_wayland_wrapper kwin_wayland plasmashell 2>/dev/null || true
+        restart_session
         ;;
     desktop)
         echo "desktop" > /etc/b5q-session
         sed -i 's/^Session=.*/Session=plasma/' "$CONF"
         echo "[b5q] Switched KDE Plasma 6 session mode to: plasma (desktop)"
-        killall sddm sddm-helper startplasma-wayland plasma_session kwin_wayland_wrapper kwin_wayland plasmashell 2>/dev/null || true
+        restart_session
         ;;
     restart)
         echo "[b5q] Restarting SDDM + KDE Plasma 6 session..."
-        killall sddm sddm-helper startplasma-wayland plasma_session kwin_wayland_wrapper kwin_wayland plasmashell 2>/dev/null || true
+        restart_session
         ;;
     *)
         echo "Current mode: $(cat /etc/b5q-session 2>/dev/null || echo mobile)"
