@@ -32,9 +32,12 @@
 #define TCM_STATUS_OK		0x01
 #define TCM_STATUS_CONTINUED	0x03
 
+#define TCM_CMD_RESET		0x04
 #define TCM_CMD_ENABLE_REPORT	0x05
 #define TCM_CMD_DISABLE_REPORT	0x06
+#define TCM_CMD_REZERO		0x27
 
+#define REPORT_IDENTIFY		0x10
 #define REPORT_TOUCH		0x11
 #define REPORT_SEC_GESTURE	0xC0
 #define REPORT_SEC_COORD	0xC1
@@ -72,6 +75,55 @@ static int find_sysfs_child_prefix(const char *dir_path, const char *prefix, cha
 	}
 	closedir(d);
 	return -1;
+}
+
+/* Locate card*-DSI-1 DPMS sysfs attribute so wakeups track OLED panel power-on. */
+static int find_dsi_dpms_path(char *out, size_t out_sz)
+{
+	DIR *d = opendir("/sys/class/drm");
+	struct dirent *de;
+	const char *suffix = "-DSI-1";
+	size_t slen = strlen(suffix);
+
+	if (!d)
+		return -1;
+	while ((de = readdir(d)) != NULL) {
+		size_t len = strlen(de->d_name);
+		if (strncmp(de->d_name, "card", 4) == 0 && len > slen &&
+		    strcmp(de->d_name + len - slen, suffix) == 0) {
+			char cand[512];
+			int n = snprintf(cand, sizeof(cand), "/sys/class/drm/%s/dpms", de->d_name);
+			if (n > 0 && (size_t)n < sizeof(cand) && access(cand, R_OK) == 0) {
+				snprintf(out, out_sz, "%s", cand);
+				closedir(d);
+				return 0;
+			}
+		}
+	}
+	closedir(d);
+	return -1;
+}
+
+static bool read_display_on(const char *dpms_path)
+{
+	char buf[32];
+	int fd;
+	ssize_t n;
+
+	if (!dpms_path || !dpms_path[0])
+		return true;
+	fd = open(dpms_path, O_RDONLY);
+	if (fd < 0)
+		return true;
+	n = read(fd, buf, sizeof(buf) - 1);
+	close(fd);
+	if (n <= 0)
+		return true;
+	buf[n] = '\0';
+	if (strncmp(buf, "Off", 3) == 0 || strncmp(buf, "Standby", 7) == 0 ||
+	    strncmp(buf, "Suspend", 7) == 0)
+		return false;
+	return true;
 }
 
 static void emit_ev(int fd, uint16_t type, uint16_t code, int32_t value)
@@ -284,6 +336,65 @@ static bool s3916_set_report(int i2c_fd, uint8_t rep, bool enable)
 	return s3916_send_cmd(i2c_fd, enable ? TCM_CMD_ENABLE_REPORT : TCM_CMD_DISABLE_REPORT, &rep, 1);
 }
 
+static void drain_gpio_events(int gpio_fd)
+{
+	struct pollfd dp = { .fd = gpio_fd, .events = POLLIN };
+	struct gpio_v2_line_event dgev;
+
+	while (poll(&dp, 1, 0) > 0) {
+		if (read(gpio_fd, &dgev, sizeof(dgev)) != (ssize_t)sizeof(dgev))
+			break;
+	}
+}
+
+static void s3916_configure_reports(int i2c_fd, int gpio_fd)
+{
+	uint8_t code = 0, payload[MAX_PAYLOAD];
+	uint16_t plen = 0;
+
+	/* Drain any pending startup/IDENTIFY report and enable Samsung SEC reports */
+	for (int i = 0; i < 3; i++)
+		s3916_read_oneshot(i2c_fd, &code, &plen, payload);
+
+	s3916_set_report(i2c_fd, REPORT_TOUCH, false);
+	s3916_set_report(i2c_fd, REPORT_SEC_GESTURE, true);
+	s3916_set_report(i2c_fd, REPORT_SEC_COORD, true);
+	s3916_set_report(i2c_fd, REPORT_SEC_STATUS, true);
+
+	for (int i = 0; i < 4 && gpio_read_level(gpio_fd) == 0; i++)
+		s3916_read_oneshot(i2c_fd, &code, &plen, payload);
+	drain_gpio_events(gpio_fd);
+}
+
+static void s3916_on_display_wake(int i2c_fd, int gpio_fd, bool use_reset)
+{
+	uint8_t code = 0, dummy[MAX_PAYLOAD];
+	uint16_t plen = 0;
+	bool rezero_ok = false;
+
+	/* Wait for OLED ELVDD/ELVSS + 120Hz TSP_SYNC to stabilize after DSI prepare/enable */
+	usleep(320000);
+
+	for (int i = 0; i < 4 && gpio_read_level(gpio_fd) == 0; i++)
+		s3916_read_oneshot(i2c_fd, &code, &plen, dummy);
+
+	if (!use_reset) {
+		rezero_ok = s3916_send_cmd(i2c_fd, TCM_CMD_REZERO, NULL, 0);
+		fprintf(stderr, "[b5q-touchd] wake: REZERO -> %s\n", rezero_ok ? "OK" : "FAIL");
+	}
+
+	if (use_reset || !rezero_ok) {
+		bool rst_ok = s3916_send_cmd(i2c_fd, TCM_CMD_RESET, NULL, 0);
+		usleep(200000);
+		s3916_configure_reports(i2c_fd, gpio_fd);
+		fprintf(stderr, "[b5q-touchd] wake: RESET (%s) + reconfig -> done\n",
+			rst_ok ? "OK" : "timeout");
+	}
+
+	drain_gpio_events(gpio_fd);
+	fflush(stderr);
+}
+
 struct mt_state {
 	bool active[MAX_SLOTS];
 	int x[MAX_SLOTS];
@@ -293,6 +404,31 @@ struct mt_state {
 	int last_slot;
 	bool btn_touch;
 };
+
+static void release_all_slots(int ufd, struct mt_state *st)
+{
+	bool reported = false;
+
+	for (int s = 0; s < MAX_SLOTS; s++) {
+		if (st->active[s]) {
+			if (st->last_slot != s) {
+				emit_ev(ufd, EV_ABS, ABS_MT_SLOT, s);
+				st->last_slot = s;
+			}
+			st->active[s] = false;
+			emit_ev(ufd, EV_ABS, ABS_MT_TRACKING_ID, -1);
+			reported = true;
+		}
+	}
+	if (st->btn_touch) {
+		emit_ev(ufd, EV_KEY, BTN_TOUCH, 0);
+		emit_ev(ufd, EV_ABS, ABS_PRESSURE, 0);
+		st->btn_touch = false;
+		reported = true;
+	}
+	if (reported)
+		emit_ev(ufd, EV_SYN, SYN_REPORT, 0);
+}
 
 static void handle_sec_coord(int ufd, struct mt_state *st, const uint8_t *data, uint16_t len)
 {
@@ -384,15 +520,20 @@ static void handle_sec_coord(int ufd, struct mt_state *st, const uint8_t *data, 
 
 int main(int argc, char **argv)
 {
+	bool wake_reset = false;
+
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--debug") == 0 || strcmp(argv[i], "-d") == 0)
 			g_debug = true;
+		else if (strcmp(argv[i], "--wake-reset") == 0)
+			wake_reset = true;
 	}
 
 	signal(SIGINT, on_signal);
 	signal(SIGTERM, on_signal);
 
-	char i2c_path[128], gpio_path[128];
+	char i2c_path[512], gpio_path[512], dpms_path[512];
+	dpms_path[0] = '\0';
 	if (find_sysfs_child_prefix("/sys/devices/platform/i2c-tsp", "i2c-", i2c_path, sizeof(i2c_path)) < 0) {
 		fprintf(stderr, "[b5q-touchd] i2c-tsp device not found\n");
 		return 1;
@@ -400,6 +541,9 @@ int main(int argc, char **argv)
 	if (find_sysfs_child_prefix("/sys/devices/platform/soc@0/f100000.pinctrl", "gpiochip", gpio_path, sizeof(gpio_path)) < 0) {
 		fprintf(stderr, "[b5q-touchd] TLMM gpiochip not found\n");
 		return 1;
+	}
+	if (find_dsi_dpms_path(dpms_path, sizeof(dpms_path)) < 0) {
+		fprintf(stderr, "[b5q-touchd] warn: DSI-1 dpms sysfs not found, wake recovery disabled\n");
 	}
 
 	int i2c_fd = open(i2c_path, O_RDWR);
@@ -426,31 +570,12 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	/* Drain any pending startup report and enable Samsung SEC reports (match stock synaptics_ts_set_up_app_fw) */
-	uint8_t code = 0, payload[MAX_PAYLOAD];
-	uint16_t plen = 0;
-	for (int i = 0; i < 3; i++)
-		s3916_read_oneshot(i2c_fd, &code, &plen, payload);
+	s3916_configure_reports(i2c_fd, gpio_fd);
 
-	s3916_set_report(i2c_fd, REPORT_TOUCH, false);
-	s3916_set_report(i2c_fd, REPORT_SEC_GESTURE, true);
-	s3916_set_report(i2c_fd, REPORT_SEC_COORD, true);
-	s3916_set_report(i2c_fd, REPORT_SEC_STATUS, true);
-
-	/* Drain any startup packets and startup GPIO edge events */
-	for (int i = 0; i < 4 && gpio_read_level(gpio_fd) == 0; i++)
-		s3916_read_oneshot(i2c_fd, &code, &plen, payload);
-	{
-		struct pollfd dp = { .fd = gpio_fd, .events = POLLIN };
-		struct gpio_v2_line_event dgev;
-		while (poll(&dp, 1, 0) > 0) {
-			if (read(gpio_fd, &dgev, sizeof(dgev)) != (ssize_t)sizeof(dgev))
-				break;
-		}
-	}
-
-	fprintf(stderr, "[b5q-touchd] Ready on %s (0x%02x) + %s line %d -> uinput (4096x4096, 10 slots)\n",
-		i2c_path, S3916_I2C_ADDR, gpio_path, S3916_ATTN_GPIO);
+	bool disp_on = read_display_on(dpms_path);
+	fprintf(stderr, "[b5q-touchd] Ready on %s (0x%02x) + %s line %d dpms=%s (%s) -> uinput (4096x4096, 10 slots)\n",
+		i2c_path, S3916_I2C_ADDR, gpio_path, S3916_ATTN_GPIO,
+		dpms_path[0] ? dpms_path : "none", disp_on ? "On" : "Off");
 	fflush(stderr);
 
 	struct mt_state st;
@@ -459,10 +584,12 @@ int main(int argc, char **argv)
 
 	struct pollfd pfd = { .fd = gpio_fd, .events = POLLIN };
 	struct gpio_v2_line_event gev;
+	uint8_t code = 0, payload[MAX_PAYLOAD];
+	uint16_t plen = 0;
 
 	while (!g_stop) {
-		/* Sleep in kernel until next falling edge on GPIO 19 (0% CPU when idle!) */
-		int pr = poll(&pfd, 1, 500);
+		/* Sleep in kernel until next falling edge on GPIO 19 or 100ms DPMS check */
+		int pr = poll(&pfd, 1, 100);
 		bool got_irq = false;
 		if (pr > 0 && (pfd.revents & POLLIN)) {
 			got_irq = true;
@@ -473,6 +600,22 @@ int main(int argc, char **argv)
 			}
 		}
 
+		if (dpms_path[0]) {
+			bool now_on = read_display_on(dpms_path);
+			if (!now_on && disp_on) {
+				disp_on = false;
+				release_all_slots(ufd, &st);
+				fprintf(stderr, "[b5q-touchd] display -> Off\n");
+				fflush(stderr);
+			} else if (now_on && !disp_on) {
+				disp_on = true;
+				fprintf(stderr, "[b5q-touchd] display -> On\n");
+				fflush(stderr);
+				s3916_on_display_wake(i2c_fd, gpio_fd, wake_reset);
+				got_irq = false;
+			}
+		}
+
 		/* Always read at least once on IRQ, then drain while ATTN (GPIO 19) stays LOW */
 		int guard = 0;
 		while (!g_stop && (got_irq || gpio_read_level(gpio_fd) == 0) && guard++ < 64) {
@@ -480,6 +623,16 @@ int main(int argc, char **argv)
 			if (s3916_read_oneshot(i2c_fd, &code, &plen, payload) == 0) {
 				if (code == REPORT_SEC_COORD && plen >= 16) {
 					handle_sec_coord(ufd, &st, payload, plen);
+				} else if (code == REPORT_IDENTIFY) {
+					fprintf(stderr, "[b5q-touchd] S3916A IDENTIFY (chip reset detected) -> reconfiguring reports\n");
+					fflush(stderr);
+					s3916_configure_reports(i2c_fd, gpio_fd);
+				} else if (code == REPORT_SEC_STATUS && plen > 0) {
+					fprintf(stderr, "[b5q-touchd] status 0xC2 len=%u:", plen);
+					for (uint16_t k = 0; k < plen && k < 16; k++)
+						fprintf(stderr, " %02x", payload[k]);
+					fprintf(stderr, "\n");
+					fflush(stderr);
 				} else if (g_debug && code >= 0x10 && code != 0xFF) {
 					fprintf(stderr, "  [pkt] code=0x%02x plen=%u\n", code, plen);
 				}

@@ -156,6 +156,36 @@ Autolock=false
 LockOnResume=false
 EOF
 
+cat <<'EOF' > "$ROOT/home/jerry/.config/powerdevilrc"
+[AC][Display]
+DimDisplayWhenIdle=false
+TurnOffDisplayWhenIdle=false
+TurnOffDisplayIdleTimeoutSec=0
+TurnOffDisplayIdleTimeoutWhenLockedSec=0
+
+[AC][SuspendAndShutdown]
+AutoSuspendAction=0
+
+[Battery][Display]
+DimDisplayWhenIdle=false
+TurnOffDisplayWhenIdle=false
+TurnOffDisplayIdleTimeoutSec=0
+TurnOffDisplayIdleTimeoutWhenLockedSec=0
+
+[Battery][SuspendAndShutdown]
+AutoSuspendAction=0
+
+[LowBattery][Display]
+DimDisplayWhenIdle=false
+TurnOffDisplayWhenIdle=false
+TurnOffDisplayIdleTimeoutSec=0
+TurnOffDisplayIdleTimeoutWhenLockedSec=0
+
+[LowBattery][SuspendAndShutdown]
+AutoSuspendAction=0
+EOF
+chmod 600 "$ROOT/home/jerry/.config/powerdevilrc"
+
 chroot "$ROOT" chown -R jerry:users /home/jerry/.config
 
 # Configure Flatpak Flathub repository (system-wide)
