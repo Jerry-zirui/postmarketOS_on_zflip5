@@ -1,0 +1,50 @@
+From: Samsung Z Flip 5 (SM-F7310) Mainline Linux 7.3.5 Bring-up
+Subject: [PATCH] drm/msm: Fix SM8550 DPU DSC initial_lines and DSI CMD_CFG0 for S6E3FAC 120Hz OLED
+
+On Qualcomm SM8550 (DPU 9.0 + DSI 6G v2.7) driving the Samsung S6E3FAC
+(AMF670BS03) 1080x2640@120Hz Command-Mode DSC 1.1 panel (2 slices of 540x40):
+
+1. dpu_encoder_dsc_initial_line_calc() computes initial_lines = 2
+   (ENC_DF_CTRL = 0x257c0002), whereas stock Samsung ABL programs
+   initial_lines = 3 (ENC_DF_CTRL = 0x257c0003). Starting rate-buffer drain
+   one line too early produces a regular 60x10-pixel staggered dark-cell
+   artifact across every 540x40 slice. Clamping initial_lines to >= 3
+   eliminates the artifact completely.
+
+2. dsi_ctrl_enable() overwrites REG_DSI_CMD_CFG0 (0x3c) with 0x00000008,
+   clearing the hardware-default upper configuration bits 0x06100000
+   (including INTERLEAVE_MAX) preserved by stock ABL (0x06100008). Preserve
+   bits [27:20] via read-modify-write.
+
+---
+ drivers/gpu/drm/msm/disp/dpu1/dpu_encoder.c | 2 +-
+ drivers/gpu/drm/msm/dsi/dsi_host.c          | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/msm/disp/dpu1/dpu_encoder.c b/drivers/gpu/drm/msm/disp/dpu1/dpu_encoder.c
+index 111111111111..222222222222 100644
+--- a/drivers/gpu/drm/msm/disp/dpu1/dpu_encoder.c
++++ b/drivers/gpu/drm/msm/disp/dpu1/dpu_encoder.c
+@@ -1984,7 +1984,7 @@ dpu_encoder_dsc_initial_line_calc(struct drm_dsc_config *dsc,
+ 	total_pixels = ssm_delay * 3 + dsc->initial_xmit_delay + 47;
+ 	if (soft_slice_per_enc > 1)
+ 		total_pixels += (ssm_delay * 3);
+-	return DIV_ROUND_UP(total_pixels, dsc->slice_width);
++	return max_t(u32, 3, DIV_ROUND_UP(total_pixels, dsc->slice_width));
+ }
+ 
+ static void dpu_encoder_dsc_pipe_cfg(struct dpu_hw_ctl *ctl,
+diff --git a/drivers/gpu/drm/msm/dsi/dsi_host.c b/drivers/gpu/drm/msm/dsi/dsi_host.c
+index 111111111111..222222222222 100644
+--- a/drivers/gpu/drm/msm/dsi/dsi_host.c
++++ b/drivers/gpu/drm/msm/dsi/dsi_host.c
+@@ -851,7 +851,8 @@ static void dsi_ctrl_enable(struct msm_dsi_host *msm_host,
+ 		dsi_write(msm_host, REG_DSI_VID_CFG1, 0);
+ 	} else {
+ 		/* Do not swap RGB colors */
+-		data = DSI_CMD_CFG0_RGB_SWAP(SWAP_RGB);
++		data = dsi_read(msm_host, REG_DSI_CMD_CFG0) & 0x0ff00000;
++		data |= DSI_CMD_CFG0_RGB_SWAP(SWAP_RGB);
+ 		data |= DSI_CMD_CFG0_DST_FORMAT(dsi_get_cmd_fmt(mipi_fmt));
+ 		dsi_write(msm_host, REG_DSI_CMD_CFG0, data);
+ 

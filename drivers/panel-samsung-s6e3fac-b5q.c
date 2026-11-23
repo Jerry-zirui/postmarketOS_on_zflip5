@@ -342,13 +342,18 @@ static int s6e3fac_b5q_unprepare(struct drm_panel *panel)
 	return regulator_bulk_disable(ARRAY_SIZE(s6e3fac_supplies), ctx->supplies);
 }
 
-/* Native 1080x2640 @ 120Hz (matches fhd120hs in SM-F7310 fdt.dts) */
+/*
+ * Native 1080x2640 @ 120Hz (matches fhd120hs in SM-F7310 fdt.dts).
+ * Horizontal porches are tuned so msm_dsi's compressed pclk calculation
+ * yields ~951 Mbps bit clock, matching qcom,mdss-dsi-panel-clockrate
+ * (951000000 Hz) and FFC_SET_0 (951 Mbps).
+ */
 static const struct drm_display_mode s6e3fac_b5q_mode = {
-	.clock = (1080 + 28 + 28 + 28) * (2640 + 24 + 28 + 32) * 120 / 1000,
+	.clock = (1080 + 42 + 42 + 41) * (2640 + 24 + 28 + 32) * 120 / 1000,
 	.hdisplay = 1080,
-	.hsync_start = 1080 + 28,
-	.hsync_end = 1080 + 28 + 28,
-	.htotal = 1080 + 28 + 28 + 28,
+	.hsync_start = 1080 + 42,
+	.hsync_end = 1080 + 42 + 42,
+	.htotal = 1080 + 42 + 42 + 41,
 	.vdisplay = 2640,
 	.vsync_start = 2640 + 24,
 	.vsync_end = 2640 + 24 + 28,

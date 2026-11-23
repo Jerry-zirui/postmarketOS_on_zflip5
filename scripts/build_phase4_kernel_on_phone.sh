@@ -132,6 +132,30 @@ if "default y if ARCH_QCOM" not in s:
     print("[+] Patched drivers/pci/pwrctrl/Kconfig")
 else:
     print("[=] drivers/pci/pwrctrl/Kconfig already patched")
+
+# Patch 5: DPU DSC 1.2 initial_lines >= 3 (matches SM8550 ABL ENC_DF_CTRL=0x257c0003 for S6E3FAC 540x40 DSC)
+p = os.path.join(L, "drivers/gpu/drm/msm/disp/dpu1/dpu_encoder.c")
+s = open(p).read()
+if "max_t(u32, 3, DIV_ROUND_UP(total_pixels, dsc->slice_width))" not in s:
+    old = "\treturn DIV_ROUND_UP(total_pixels, dsc->slice_width);"
+    new = "\treturn max_t(u32, 3, DIV_ROUND_UP(total_pixels, dsc->slice_width));"
+    assert old in s, "dpu_encoder.c initial_lines pattern not found"
+    open(p, "w").write(s.replace(old, new, 1))
+    print("[+] Patched dpu_encoder.c (DSC initial_lines >= 3)")
+else:
+    print("[=] dpu_encoder.c already patched")
+
+# Patch 6: Preserve upper hardware-default bits (0x06100000, INTERLEAVE_MAX) in DSI CMD_CFG0
+p = os.path.join(L, "drivers/gpu/drm/msm/dsi/dsi_host.c")
+s = open(p).read()
+if "dsi_read(msm_host, REG_DSI_CMD_CFG0) & 0x0ff00000" not in s:
+    old = "\t\tdata = DSI_CMD_CFG0_RGB_SWAP(SWAP_RGB);\n\t\tdata |= DSI_CMD_CFG0_DST_FORMAT(dsi_get_cmd_fmt(mipi_fmt));\n\t\tdsi_write(msm_host, REG_DSI_CMD_CFG0, data);"
+    new = "\t\tdata = dsi_read(msm_host, REG_DSI_CMD_CFG0) & 0x0ff00000;\n\t\tdata |= DSI_CMD_CFG0_RGB_SWAP(SWAP_RGB);\n\t\tdata |= DSI_CMD_CFG0_DST_FORMAT(dsi_get_cmd_fmt(mipi_fmt));\n\t\tdsi_write(msm_host, REG_DSI_CMD_CFG0, data);"
+    assert old in s, "dsi_host.c CMD_CFG0 pattern not found"
+    open(p, "w").write(s.replace(old, new, 1))
+    print("[+] Patched dsi_host.c (preserve CMD_CFG0 upper bits)")
+else:
+    print("[=] dsi_host.c already patched")
 PYEOF
 
 echo "=== [3/5] Configuring Phase 4 Kernel (DRM_MSM_DPU + DSI + S6E3FAC) ==="
