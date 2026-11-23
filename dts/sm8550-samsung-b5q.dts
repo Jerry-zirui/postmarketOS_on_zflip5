@@ -950,6 +950,13 @@
 &tlmm {
 	gpio-reserved-ranges = <36 4>, <50 2>;
 
+	cover-panel-reset-hog {
+		gpio-hog;
+		gpios = <42 GPIO_ACTIVE_HIGH>;
+		output-low;
+		line-name = "cover-panel-reset-hold";
+	};
+
 	tsp_int_default: tsp-int-default-state {
 		pins = "gpio19";
 		function = "gpio";
