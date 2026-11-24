@@ -271,7 +271,7 @@ case "$TARGET" in
         exec python3 -c 'import ctypes; l=ctypes.CDLL(None,use_errno=True); r=l.syscall(ctypes.c_long(142),ctypes.c_uint(0xfee1dead),ctypes.c_uint(0x28121969),ctypes.c_uint(0xa1b2c3d4),ctypes.c_char_p(b"bootloader")); print(r, ctypes.get_errno())'
         ;;
     android|normal)
-        exec /sbin/reboot -f
+        exec /bin/busybox reboot -f
         ;;
     *)
         echo "Usage: b5q-reboot [linux|android|download]"
@@ -282,6 +282,35 @@ EOF
 chmod 755 "$ROOT/usr/local/bin/b5q-reboot"
 ln -sf /usr/local/bin/b5q-plasma-mode "$ROOT/usr/bin/b5q-plasma-mode"
 ln -sf /usr/local/bin/b5q-reboot "$ROOT/usr/bin/b5q-reboot"
+
+# Replace BusyBox symlinks (rm -f first so redirection never overwrites /bin/busybox)
+# so elogind / KDE Plasma "Restart" and "Shut Down" work cleanly under /sbin/b5q-desktop-init.
+rm -f "$ROOT/sbin/reboot" "$ROOT/sbin/poweroff" "$ROOT/sbin/halt"
+cat <<'EOF' > "$ROOT/sbin/reboot"
+#!/bin/sh
+# Hook for elogind / KDE Plasma "Restart": PID 1 is /sbin/b5q-desktop-init (not OpenRC/systemd).
+# Reboots straight back into Mainline Linux; use "b5q-reboot android" to boot stock Android 14.
+sync
+sleep 0.5
+sync
+exec /usr/local/bin/b5q-reboot linux
+EOF
+cat <<'EOF' > "$ROOT/sbin/poweroff"
+#!/bin/sh
+# Hook for elogind / KDE Plasma "Shut Down"
+sync
+sleep 0.5
+sync
+exec /bin/busybox poweroff -f
+EOF
+cat <<'EOF' > "$ROOT/sbin/halt"
+#!/bin/sh
+sync
+sleep 0.5
+sync
+exec /bin/busybox halt -f
+EOF
+chmod 755 "$ROOT/sbin/reboot" "$ROOT/sbin/poweroff" "$ROOT/sbin/halt"
 
 cat <<'EOF' > "$ROOT/usr/local/bin/b5q-power-sync"
 #!/bin/sh
