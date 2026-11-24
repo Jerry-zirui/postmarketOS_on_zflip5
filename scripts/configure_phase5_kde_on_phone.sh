@@ -194,9 +194,26 @@ printf '[Basic Settings]\nIndexing-Enabled=false\n' > "$ROOT/home/jerry/.config/
 
 chroot "$ROOT" chown -R jerry:users /home/jerry/.config
 
-# Configure Flatpak Flathub repository (system-wide)
+# Configure Polkit local active wheel rule (required for Discover / Flatpak / APK auth)
+mkdir -p "$ROOT/etc/polkit-1/rules.d"
+cat <<'EOF' > "$ROOT/etc/polkit-1/rules.d/50-b5q-wheel.rules"
+polkit.addRule(function(action, subject) {
+    if (subject.isInGroup("wheel") && subject.local && subject.active) {
+        return polkit.Result.YES;
+    }
+});
+EOF
+chroot "$ROOT" /bin/sh -c '
+    if id polkitd >/dev/null 2>&1; then
+        chown polkitd:polkitd /etc/polkit-1/rules.d/50-b5q-wheel.rules
+    fi
+    chmod 644 /etc/polkit-1/rules.d/50-b5q-wheel.rules
+'
+
+# Configure Flatpak Flathub repository (system-wide + user scope for Discover)
 chroot "$ROOT" /bin/sh -c '
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo 2>/dev/null || true
+    su - jerry -c "flatpak --user remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo" 2>/dev/null || true
 '
 
 echo "[6/7] Installing helper commands b5q-plasma-mode & b5q-reboot..."
