@@ -513,6 +513,11 @@ modprobe btqca 2>&1 || true
 modprobe hci_uart 2>&1 || true
 ( sleep 2; btmgmt --index 0 public-addr 02:B5:73:10:00:02 >/dev/null 2>&1 || true ) &
 
+echo "[MODS] Loading Audio (TFA9878 SmartPA + LPASS/AudioReach)..."
+modprobe snd-soc-tfa98xx 2>&1 || true
+modprobe snd-soc-dmic 2>&1 || true
+modprobe snd-soc-sc8280xp 2>&1 || true
+
 echo "[MODS] Loading Synaptics S3916A Touchscreen..."
 modprobe synaptics_s3916_sec 2>&1 || true
 if ! grep -qi "Synaptics S3916A" /proc/bus/input/devices 2>/dev/null; then
@@ -521,8 +526,8 @@ if ! grep -qi "Synaptics S3916A" /proc/bus/input/devices 2>/dev/null; then
     modprobe synaptics_s3916_sec 2>&1 || true
 fi
 
-# Re-trigger udev for newly loaded DRM / input / net devices so elogind/KWin sees them
-/sbin/udevadm trigger --action=add --subsystem-match=drm --subsystem-match=input 2>/dev/null || true
+# Re-trigger udev for newly loaded DRM / input / sound / net devices so elogind/KWin/PipeWire sees them
+/sbin/udevadm trigger --action=add --subsystem-match=drm --subsystem-match=input --subsystem-match=sound 2>/dev/null || true
 /sbin/udevadm settle --timeout=2 2>/dev/null || true
 
 # Start D-Bus (system), elogind, Polkit, UPower, BlueZ, NetworkManager

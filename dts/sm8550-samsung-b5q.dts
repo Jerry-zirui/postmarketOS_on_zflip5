@@ -250,6 +250,73 @@
 		};
 	};
 
+	sound {
+		compatible = "qcom,sm8550-sndcard";
+		model = "SM8550-Samsung-B5Q";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pri_mi2s_active>;
+		audio-routing = "VA DMIC0", "VA_MCLK",
+				"VA DMIC1", "VA_MCLK",
+				"VA DMIC2", "VA_MCLK",
+				"VA DMIC3", "VA_MCLK",
+				"VA DMIC0", "vdd-micb",
+				"VA DMIC1", "vdd-micb",
+				"VA DMIC2", "vdd-micb",
+				"VA DMIC3", "vdd-micb",
+				"TX DMIC0", "VA DMIC0",
+				"TX DMIC1", "VA DMIC1",
+				"TX DMIC2", "VA DMIC2",
+				"TX DMIC3", "VA DMIC3";
+
+		pri-mi2s-dai-link {
+			link-name = "Primary MI2S Playback";
+
+			cpu {
+				sound-dai = <&q6apmbedai PRIMARY_MI2S_RX>;
+			};
+
+			codec {
+				sound-dai = <&tfa9878_bottom>, <&tfa9878_top>;
+			};
+
+			platform {
+				sound-dai = <&q6apm>;
+			};
+		};
+
+		tx-capture-dai-link {
+			link-name = "TX Capture";
+
+			cpu {
+				sound-dai = <&q6apmbedai TX_CODEC_DMA_TX_3>;
+			};
+
+			codec {
+				sound-dai = <&lpass_txmacro 0>;
+			};
+
+			platform {
+				sound-dai = <&q6apm>;
+			};
+		};
+
+		va-dai-link {
+			link-name = "VA Capture";
+
+			cpu {
+				sound-dai = <&q6apmbedai VA_CODEC_DMA_TX_0>;
+			};
+
+			codec {
+				sound-dai = <&lpass_vamacro 0>;
+			};
+
+			platform {
+				sound-dai = <&q6apm>;
+			};
+		};
+	};
+
 	reserved-memory {
 		adspslpi_mem: adspslpi@9ea00000 {
 			reg = <0x0 0x9ea00000 0x0 0x59b4000>;
@@ -363,6 +430,14 @@
 			regulator-name = "vreg_l9b_2p9";
 			regulator-min-microvolt = <2960000>;
 			regulator-max-microvolt = <3008000>;
+			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
+			regulator-always-on;
+		};
+
+		vreg_l10b_1p8: ldo10 {
+			regulator-name = "vreg_l10b_1p8";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
 			regulator-initial-mode = <RPMH_REGULATOR_MODE_HPM>;
 			regulator-always-on;
 		};
@@ -800,6 +875,58 @@
 	status = "okay";
 };
 
+/* Dual Goodix/NXP TFA9878 SmartPA Speaker Amplifiers */
+&i2c_hub_6 {
+	clock-frequency = <1000000>;
+	status = "okay";
+
+	tfa9878_bottom: amplifier@34 {
+		compatible = "tfa,tfa98xx";
+		reg = <0x34>;
+		#sound-dai-cells = <0>;
+		sound-name-prefix = "BottomAmp";
+		reset-gpios = <&tlmm 0 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&tfa9878_gpio_default>;
+		inchannel = <1>;
+	};
+
+	tfa9878_top: amplifier@35 {
+		compatible = "tfa,tfa98xx";
+		reg = <0x35>;
+		#sound-dai-cells = <0>;
+		sound-name-prefix = "TopAmp";
+		inchannel = <0>;
+	};
+};
+
+&lpass_tlmm {
+	status = "okay";
+};
+
+&lpass_txmacro {
+	status = "okay";
+};
+
+&lpass_vamacro {
+	pinctrl-0 = <&dmic01_default>, <&dmic23_default>;
+	pinctrl-names = "default";
+	vdd-micb-supply = <&vreg_l10b_1p8>;
+	qcom,dmic-sample-rate = <2400000>;
+	status = "okay";
+};
+
+&q6apmbedai {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	dai@16 {
+		reg = <PRIMARY_MI2S_RX>;
+		clocks = <&q6prmcc LPASS_CLK_ID_PRI_MI2S_IBIT LPASS_CLK_ATTRIBUTE_COUPLE_NO>;
+		clock-names = "bclk";
+	};
+};
+
 /* Maxim MAX77705 Companion PMIC + Charger + Fuelgauge */
 &i2c_hub_8 {
 	clock-frequency = <400000>;
@@ -957,6 +1084,42 @@
 		gpios = <42 GPIO_ACTIVE_HIGH>;
 		output-low;
 		line-name = "cover-panel-reset-hold";
+	};
+
+	tfa9878_gpio_default: tfa9878-gpio-default-state {
+		pins = "gpio0", "gpio14", "gpio154";
+		function = "gpio";
+		bias-disable;
+	};
+
+	pri_mi2s_active: pri-mi2s-active-state {
+		clk-pins {
+			pins = "gpio126";
+			function = "i2s0_sck";
+			drive-strength = <2>;
+			bias-disable;
+		};
+
+		ws-pins {
+			pins = "gpio129";
+			function = "i2s0_ws";
+			drive-strength = <2>;
+			bias-disable;
+		};
+
+		din-pins {
+			pins = "gpio127";
+			function = "i2s0_data0";
+			drive-strength = <2>;
+			bias-disable;
+		};
+
+		dout-pins {
+			pins = "gpio128";
+			function = "i2s0_data1";
+			drive-strength = <2>;
+			bias-disable;
+		};
 	};
 
 	tsp_int_default: tsp-int-default-state {
