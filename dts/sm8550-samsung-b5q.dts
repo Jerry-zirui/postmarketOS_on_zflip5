@@ -930,9 +930,11 @@
 	status = "okay";
 };
 
-/* Keep remoteprocs disabled in Phase 3A (enabled in Phase 4 with ADSP/CDSP/MPSS firmware) */
+/* Enable SM8550 ADSP remoteproc for SSC sensors & hexagonrpcd (CDSP/MPSS remain disabled) */
 &remoteproc_adsp {
-	status = "disabled";
+	firmware-name = "qcom/sm8550/samsung/b5q/adsp.mbn",
+			"qcom/sm8550/samsung/b5q/adsp_dtb.mbn";
+	status = "okay";
 };
 
 &remoteproc_cdsp {
@@ -1045,6 +1047,7 @@
 		vddrfa1p2-supply = <&vreg_pmu_rfa_1p2>;
 		vddrfa1p7-supply = <&vreg_pmu_rfa_1p7>;
 
+		local-bd-address = [ 02 00 10 73 b5 02 ];
 		max-speed = <3200000>;
 	};
 };

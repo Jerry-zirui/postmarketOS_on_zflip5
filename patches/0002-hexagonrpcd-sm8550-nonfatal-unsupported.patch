@@ -1,0 +1,74 @@
+--- a/hexagonrpcd/apps_std.c
++++ b/hexagonrpcd/apps_std.c
+@@ -167,8 +167,10 @@
+ 
+ 	rw_mode = ((const char *) inbufs[4].p)[0];
+ 	if (rw_mode == 'w' || rw_mode == 'a') {
++#ifdef HEXAGONRPC_VERBOSE
+ 		fprintf(stderr, "Tried to open %s for writing\n",
+ 				(const char *) inbufs[3].p);
++#endif
+ 		return AEE_EUNSUPPORTED;
+ 	}
+ 
+--- a/hexagonrpcd/listener.c
++++ b/hexagonrpcd/listener.c
+@@ -520,23 +520,26 @@
+ 	}
+ 
+ 	if (handle >= n_ifaces) {
+-		fprintf(stderr, "Unsupported handle: %u\n", handle);
++		fprintf(stderr, "Unsupported handle: %u (sc=%08x)\n", handle, sc);
++		*returned = NULL;
+ 		*result = AEE_EUNSUPPORTED;
+-		return 1;
++		return 0;
+ 	}
+ 
+ 	if (method >= ifaces[handle]->n_procs) {
+-		fprintf(stderr, "Unsupported method: %u (%08x)\n", method, sc);
++		fprintf(stderr, "Unsupported method: handle=%u method=%u (%08x)\n", handle, method, sc);
++		*returned = NULL;
+ 		*result = AEE_EUNSUPPORTED;
+-		return 1;
++		return 0;
+ 	}
+ 
+ 	impl = &ifaces[handle]->procs[method];
+ 
+ 	if (impl->def == NULL || impl->impl == NULL) {
+-		fprintf(stderr, "Unsupported method: %u (%08x)\n", method, sc);
++		fprintf(stderr, "Unsupported method: handle=%u method=%u (%08x)\n", handle, method, sc);
++		*returned = NULL;
+ 		*result = AEE_EUNSUPPORTED;
+-		return 1;
++		return 0;
+ 	}
+ 
+ 	ret = count_sizes4(impl->def, REMOTE_SCALARS_INBUFS(sc),
+@@ -586,8 +589,10 @@
+ 		if (ret)
+ 			break;
+ 
+-		if (returned != NULL)
++		if (returned != NULL) {
+ 			iobuf_free(n_outbufs, returned);
++			returned = NULL;
++		}
+ 
+ 		ret = invoke_requested_procedure(n_ifaces, ifaces,
+ 						 handle, sc, &result,
+@@ -598,7 +603,12 @@
+ 		if (decoded != NULL)
+ 			iobuf_free(REMOTE_SCALARS_INBUFS(sc), decoded);
+ 
+-		n_outbufs = REMOTE_SCALARS_OUTBUFS(sc);
++		if (returned == NULL) {
++			sc = REMOTE_SCALARS_MAKE(0, 0, 0);
++			n_outbufs = 0;
++		} else {
++			n_outbufs = REMOTE_SCALARS_OUTBUFS(sc);
++		}
+ 	}
+ 
+ 	return ret;

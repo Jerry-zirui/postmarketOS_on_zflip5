@@ -511,6 +511,7 @@ modprobe ath11k_pci 2>&1 || true
 echo "[MODS] Loading Bluetooth 5.3 (hci_uart + btqca)..."
 modprobe btqca 2>&1 || true
 modprobe hci_uart 2>&1 || true
+( sleep 2; btmgmt --index 0 public-addr 02:B5:73:10:00:02 >/dev/null 2>&1 || true ) &
 
 echo "[MODS] Loading Synaptics S3916A Touchscreen..."
 modprobe synaptics_s3916_sec 2>&1 || true
@@ -541,6 +542,20 @@ sleep 1
 /usr/lib/polkit-1/polkitd >/tmp/polkit.log 2>&1 &
 /usr/libexec/upowerd >/tmp/upower.log 2>&1 &
 /usr/lib/bluetooth/bluetoothd >/tmp/bluetoothd.log 2>&1 &
+
+# Qualcomm ADSP Sensor Core (Service 400) + net.hadess.SensorProxy bridge for Plasma Mobile Auto-Rotate
+[ -x /usr/local/bin/b5q-sensor-proxy ] && /usr/local/bin/b5q-sensor-proxy >/tmp/b5q-sensor-proxy.log 2>&1 &
+(
+    for i in $(seq 1 15); do
+        [ -c /dev/fastrpc-adsp ] && break
+        sleep 1
+    done
+    if [ -c /dev/fastrpc-adsp ] && [ -x /opt/hexagonrpc/hexagonrpcd ]; then
+        modprobe qrtr_smd 2>/dev/null || true
+        su -s /bin/sh fastrpc -c "LD_LIBRARY_PATH=/opt/hexagonrpc /opt/hexagonrpc/hexagonrpcd -f /dev/fastrpc-adsp -d adsp -R /usr/share/qcom >/tmp/hexagonrpcd-root.log 2>&1 &"
+        su -s /bin/sh fastrpc -c "LD_LIBRARY_PATH=/opt/hexagonrpc /opt/hexagonrpc/hexagonrpcd -f /dev/fastrpc-adsp -d adsp -s -R /usr/share/qcom >/tmp/hexagonrpcd-sensor.log 2>&1 &"
+    fi
+) &
 
 # Let NetworkManager manage wlan0 (wpa_supplicant via D-Bus)
 /usr/sbin/wpa_supplicant -u -s -B >/tmp/wpa_dbus.log 2>&1 || true
