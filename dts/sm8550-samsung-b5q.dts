@@ -1,9 +1,11 @@
-// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-License-Identifier: GPL-2.0-only
+// Copyright (C) 2026 Jerry-zirui (https://github.com/Jerry-zirui/postmarketOS_on_zflip5)
 /*
  * Device Tree for Samsung Galaxy Z Flip5 (SM-F7310, codename b5q)
  * Slab-modded configuration (main 6.7" 1080x2640 display only; cover screen & hinge omitted)
  *
  * Derived from upstream sm8550-samsung-q5q.dts and real-device SM-F7310 hardware extraction.
+ * Redistributions and derivative works MUST remain GPL-2.0-only open source with source attribution.
  */
 
 /dts-v1/;

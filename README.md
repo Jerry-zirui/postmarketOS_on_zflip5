@@ -93,6 +93,8 @@ tar -xzf b5q-userspace-v1.0.0.tar.gz -C /
 ```text
 .
 ├── README.md                                  # 项目总览与 v1.0.0 封版说明
+├── LICENSE                                    # GNU General Public License v3.0 协议全文
+├── NOTICE                                     # 版权声明、双 GPL 适用范围与强制署名条款
 ├── audio/
 │   ├── audioreach/
 │   │   └── SM8550-Samsung-B5Q.m4              # SM8550 AudioReach 音频拓扑源码
@@ -133,3 +135,16 @@ tar -xzf b5q-userspace-v1.0.0.tar.gz -C /
 
 1. **[硬件架构解析与兼容性评估报告](docs/HARDWARE_COMPATIBILITY_REPORT.md)** — 外设芯片型号、总线拓扑、中断引脚、内存保留区及兼容性基线。
 2. **[主线 Linux 移植分阶段实施计划](docs/IMPLEMENTATION_PLAN.md)** — 从引导链路、设备树、显示/触控、Wi-Fi/蓝牙/传感器到音频和桌面栈的完整演进记录。
+
+---
+
+## ⚖️ 开源协议与署名要求
+
+本项目采用**强传染性（Strict Copyleft）开源协议**，严禁任何形式的闭源商用或未公开源码的衍生分发：
+
+- **仓库主体、用户态守护进程、脚本、音频拓扑与 UCM2 配置、文档**：采用 **[GNU GPL v3.0 (`GPL-3.0-only`)](LICENSE)**。
+- **Linux 内核驱动源码、设备树与内核补丁**（`drivers/panel-samsung-s6e3fac-b5q.c`、`drivers/synaptics_s3916_sec.c`、`dts/sm8550-samsung-b5q.dts`、`patches/0001-*.patch`、`patches/0003-*.patch`）：采用 **GNU GPL v2.0 (`GPL-2.0-only`)**，与主线 Linux 内核许可保持严格一致。
+
+**引用与衍生分发强制条款**（依据 GPLv3 第 7(b) 条与 [NOTICE](NOTICE)）：
+1. **保持开源**：任何修改、衍生工程、ROM/镜像打包或二次分发，必须以相同适用 GPL 协议提供完整可编译源码，不得闭源或附加限制条款。
+2. **必须注明来源**：任何引用、借鉴、转载或复用本项目源码、设备树、驱动补丁、硬件参数或音频配置的作品，必须在仓库显著位置、`NOTICE` 与发布说明中保留原始版权并明确标注来源：**[`Jerry-zirui/postmarketOS_on_zflip5`](https://github.com/Jerry-zirui/postmarketOS_on_zflip5)**。

@@ -1,0 +1,57 @@
+NOTICE & ATTRIBUTION REQUIREMENTS
+=================================
+
+Project: postmarketOS on Samsung Galaxy Z Flip 5 (SM-F7310 / samsung-b5q)
+Source Repository: https://github.com/Jerry-zirui/postmarketOS_on_zflip5
+Copyright (C) 2026 Jerry-zirui
+
+1. STRICT COPYLEFT LICENSING
+----------------------------
+Unless explicitly stated otherwise in an individual file's SPDX header:
+
+- All original userspace daemons, scripts, build/deployment tooling, UCM2 /
+  AudioReach topology configurations, and project documentation in this
+  repository are licensed under the GNU General Public License v3.0 only
+  (`GPL-3.0-only`). See the `LICENSE` file in the repository root.
+
+- All Linux kernel drivers, Device Tree sources (`dts/`), and Linux kernel
+  patches (`drivers/panel-samsung-s6e3fac-b5q.c`,
+  `drivers/synaptics_s3916_sec.c`, `dts/sm8550-samsung-b5q.dts`,
+  `patches/0001-*.patch`, `patches/0003-*.patch`) are licensed under the GNU
+  General Public License v2.0 only (`GPL-2.0-only`) for strict compatibility
+  with the Linux kernel.
+
+Any derivative work, redistribution, modification, or binary distribution built
+from or incorporating code/configurations from this repository MUST remain
+open-source with complete corresponding source code provided under the same
+applicable GPL license (`GPL-3.0-only` / `GPL-2.0-only`). Closed-source or
+proprietary derivatives are strictly prohibited.
+
+2. MANDATORY SOURCE ATTRIBUTION (GPLv3 Section 7(b) / GPLv2 Section 1)
+----------------------------------------------------------------------
+Any fork, redistribution, derivative work, ROM/image build, blog post, or
+technical citation referencing or reusing code, device trees, patches, or
+audio/display/sensor/touch bring-up configurations from this project MUST
+preserve all copyright and legal notices AND explicitly credit the original
+source:
+
+  postmarketOS_on_zflip5 by Jerry-zirui
+  https://github.com/Jerry-zirui/postmarketOS_on_zflip5
+
+3. UPSTREAM & THIRD-PARTY ATTRIBUTIONS
+--------------------------------------
+This project builds upon and interacts with the following upstream open-source
+projects (each governed by its respective license):
+- The Linux Kernel (GPL-2.0-only)
+- postmarketOS & Alpine Linux
+- linux-msm/audioreach-topology
+- Goodix-vas/tfa9878-qcom-ar-6.6 (`tfa9878` ASoC codec driver)
+- hexagonrpcd & libssc (Qualcomm ADSP FastRPC / SSC daemon and library)
+- KDE Plasma 6, PipeWire, WirePlumber, BlueZ, Flatpak, Podman, Distrobox
+
+4. PROPRIETARY FIRMWARE EXCLUSION
+---------------------------------
+No proprietary vendor firmware binaries (e.g., Qualcomm `adsp.mbn`,
+`a740_zap.mbn`, `WCN6855` / `QCA6490` WLAN/BT firmware & BDFs, Goodix/NXP
+`tfa98xx.cnt`) are distributed in this repository or its releases. Users must
+supply those files from their own legitimately owned device.

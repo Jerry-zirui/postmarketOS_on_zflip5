@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Jerry-zirui (https://github.com/Jerry-zirui/postmarketOS_on_zflip5)
 /*
  * b5q-sensor-proxy: Lightweight net.hadess.SensorProxy D-Bus bridge for
  * Samsung Galaxy Z Flip 5 (SM8550) Qualcomm Snapdragon Sensor Core via libssc.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Copyright (C) 2026 Jerry-zirui (https://github.com/Jerry-zirui/postmarketOS_on_zflip5)
 /*
  * b5q-touchd: Hardware-IRQ-driven Synaptics S3916A (Samsung SEC 0xC1 16-byte protocol)
  * userspace uinput driver for Samsung Galaxy Z Flip 5 (SM-F7310) over i2c-gpio.
