@@ -1,36 +1,90 @@
 # postmarketOS on Samsung Galaxy Z Flip 5 (`SM-F7310` / `samsung-b5q`) — 直板改装版
 
-本项目致力于将主线 Linux (**postmarketOS**) 移植到已改装为**直板形态**的三星 Galaxy Z Flip 5（公开版 `SM-F7310`，高通骁龙 8 Gen 2 / `SM8550` / `kalama`），打造一台兼具 **120Hz 触屏移动交互** 与 **完整 Linux 桌面生产力体验** 的随身 ARM64 掌上电脑。
+> **项目状态：已固化封版（[`v1.0.0` Final Release](https://github.com/Jerry-zirui/postmarketOS_on_zflip5/releases/tag/v1.0.0)），本项目到此完结归档。**
+
+本项目将主线 Linux（**Linux `7.3.5-b5q-p4`** + **Alpine Linux 3.21 / KDE Plasma 6.2.4**）完整移植至已改装为**直板形态**的国行三星 Galaxy Z Flip 5（`SM-F7310` / `samsung-b5q`，高通骁龙 8 Gen 2 / `SM8550` / `kalama`），实现 120Hz 原生主屏触控、GPU 加速、Wi-Fi 6E、蓝牙 5.3、重力感应自动旋转与双扬声器/双麦克风的日常可用随身 ARM64 Linux 终端。
 
 ---
 
-## 📌 项目核心背景与定位
+## 📌 设备基线与系统架构
 
 - **目标设备**：Samsung Galaxy Z Flip 5 (`SM-F7310` / `b5qzhx` / `board-id,11`)
-- **物理形态**：**已改装为直板机**（彻底移除/忽略副屏 `DSI-2`、副屏触控 `spi@890000` 及折叠霍尔开关 `akm-digital-hall`，从设备树底层将其固化为单主屏 `1080×2640 @ 120Hz` 骁龙 8 Gen 2 直板设备）
-- **目标系统栈**：
-  - **底层发行版**：`postmarketOS (edge, systemd)`
-  - **桌面与人机交互环境**：`GNOME Shell (Mobile 自适应版)` 或 `KDE Plasma 6 (Plasma Mobile / Desktop 双模式)`
-  - **完整桌面生态扩展**：`Flatpak` + `Distrobox`（零损耗容器化运行 Arch Linux ARM / Ubuntu `glibc` 桌面应用）
+- **物理形态**：**直板改装机**（在设备树与启动链层面禁用副屏及折叠机制，通过 TLMM GPIO 42 将外屏保持硬件复位关闭，屏蔽 `spi@890000` 与折叠霍尔逻辑，作为 `1080×2640@120Hz` 单主屏直板设备使用）
+- **主线内核**：Linux `7.3.5-b5q-p4`（`aarch64`，Android Boot Image v2 独立存放于 `recovery` 分区 `/dev/sda23`，原厂 Android 14 启动链零侵入）
+- **桌面与用户态**：Alpine Linux 3.21 + **KDE Plasma 6.2.4（`Plasma Mobile` / `Plasma Desktop` 双模式，`b5q-plasma-mode` 切换）** + SDDM Wayland + PipeWire / WirePlumber + BlueZ + NetworkManager + Flatpak + Podman + Distrobox
 
 ---
 
-## 🚀 当前真机实测进度（Mainline Linux 7.3.5）
+## ✅ 最终硬件支持矩阵（`v1.0.0` 封版实测）
 
-| 模块 | 状态 | 实测详情 |
+| 模块 | 状态 | 实现方案与实测详情 |
 |---|---|---|
-| **主线内核 & 启动链** | ✅ 已完成 | Linux 7.3.5 独立运行于 `recovery` 分区 (`sda23`)，支持三级自举（`sda37` 桌面 -> `sda29` 救援 -> initramfs SSH），日常 Android 14 启动链 0 改动；支持 `b5q-reboot [linux\|android\|download]` 免按键重启 |
-| **独立原生 Linux 分区** | ✅ 已完成 | UFS 4.0 无损重分区：**`334.3 GiB` 独立 `ext4` 分区 (`/dev/sda37`)** + `4 GiB` Swap，为 Android 14 保留 `128.0 GiB` (`/dev/sda36`)，保留 `/dev/sda29` 救援根文件系统 |
-| **主屏显示（原生 120Hz DRM）** | ✅ 已完成 | 自研主线 DRM 面板驱动 [`drivers/panel-samsung-s6e3fac-b5q.c`](drivers/panel-samsung-s6e3fac-b5q.c)（`B5_S6E3FAC_AMF670BS03`）接入 `msm_dpu` + `mdss_dsi0` + 4nm PHY + **DSC 1.1**（`951.2 Mbps` 匹配 `FFC_SET_0` + [`0001-drm-msm-sm8550-s6e3fac-dsc-initial-lines-cmd-cfg0.patch`](patches/0001-drm-msm-sm8550-s6e3fac-dsc-initial-lines-cmd-cfg0.patch) 对齐 ABL `ENC_DF_CTRL` `initial_lines=3` 与 `CMD_CFG0`）：**`DSI-1 1080×2640@120Hz`** 原生清晰点亮，支持原生 **Adreno 740 UBWC 4.0** 零拷贝合成、**12-bit 硬件亮度无级调节（`0..2047`）** 与真息屏休眠 |
-| **KDE Plasma 6 桌面环境** | ✅ 已完成 | **KDE Plasma 6.2.4（Plasma Mobile + Plasma Desktop 双模式，`b5q-plasma-mode` 一键切换）** + SDDM 0.21 Wayland + `elogind` + `XWayland` + Maliit 虚拟键盘 + **KWin & Wayland 全程 Adreno 740 (`FD740`) 零拷贝 120Hz 硬件合成（待机 CPU 0%）** |
-| **主屏 10 点触控** | ✅ 已完成 | 硬件中断驱动 [`drivers/b5q_touchd.c`](drivers/b5q_touchd.c) + [`drivers/synaptics_s3916_sec.c`](drivers/synaptics_s3916_sec.c)（`i2c-gpio` GPIO 44/45 绕过 SM8550 `gpi_dma1` 丢包 Bug，TLMM GPIO 19 硬件中断，7 步全手势 0 丢包验收通过） |
-| **Adreno 740 3D GPU** | ✅ 已完成 | 与 `msm_dpu` 融合于统一 `/dev/dri/card1` + `renderD128`，实测 KWin 6 与所有 Wayland 应用原生 **`freedreno FD740` OpenGL 4.6 / GLES 3.2 / Vulkan Turnip** + `GMU v4.1.9` 全程硬件加速 |
-| **桌面应用生态** | ✅ 已完成 | **Flatpak 1.14.10**（已配置 Flathub + `xdg-desktop-portal-kde`）+ **Podman 5.3.2 (`crun` / `cgroups v2` / `overlay`)** + **Distrobox 1.8.0** 全线验证就绪 |
-| **电池 / 充电 / 电量计** | ✅ 已完成 | `MAX77705` (`Rev.0x2` 补丁) + `UPower` 实时上报电量%、电压、电流、温度、循环次数与 USB 快充 |
-| **屏幕/触控 PMIC** | ✅ 已完成 | `Samsung S2DOS05` (`i2c-gpio` 20/21 @ `0x60`) 5 路电源轨全部在线 |
-| **蓝牙 5.3** | ✅ 已完成 | `WCN6855 / QCA6490` (`uart14`) + `BlueZ` / `Bluedevil` 固件加载完成，`hci0` 在线 |
-| **USB 网卡 & SSH & UFS 4.0** | ✅ 已完成 | macOS 原生免驱 USB CDC-NCM (`scripts/ssh_b5q.sh`) + 512 GB UFS 4.0 + 全部物理按键 |
-| **Wi-Fi 6E (`ath11k_pci`)** | ✅ 已完成 | `WCN6855 / QCA6490` (`01:00.0`) + `pmk8550_sleep_clk` + 4-cell `iommu-map` + **`NFA725` (`iPA`) BDF** -> NetworkManager 开机自动联网，支持无线免线 SSH 直连 |
+| **主线内核 & 启动链** | ✅ 已完成 | Linux `7.3.5-b5q-p4` 独立部署于 `recovery` 分区（`/dev/sda23`），原厂 Android 14 `boot`/`vendor_boot` 零改动；支持 `b5q-reboot [linux\|android\|download]` 免按键重启 |
+| **UFS 4.0 独立分区** | ✅ 已完成 | 无损重分区：**`334.3 GiB` 独立 `ext4` 根分区（`/dev/sda37`）** + `4 GiB` Swap，完整保留 Android 14（`/dev/sda36` `128.0 GiB`）与 `/dev/sda29` 救援镜像 |
+| **原生 120Hz 主屏显示** | ✅ 已完成 | 自研 DRM 面板驱动 [`drivers/panel-samsung-s6e3fac-b5q.c`](drivers/panel-samsung-s6e3fac-b5q.c)（`B5_S6E3FAC_AMF670BS03`）接入 `msm_dpu` + `mdss_dsi0` + 4nm PHY + **DSC 1.1**（配合 [`patches/0001-drm-msm-sm8550-s6e3fac-dsc-initial-lines-cmd-cfg0.patch`](patches/0001-drm-msm-sm8550-s6e3fac-dsc-initial-lines-cmd-cfg0.patch)）：`DSI-1 1080×2640@120Hz`、12-bit 无级亮度调节（`0..2047`）、真息屏休眠唤醒 |
+| **外屏硬件关闭** | ✅ 已完成 | [`drivers/b5q-cover-off.c`](drivers/b5q-cover-off.c) 在启动早期拉低 TLMM GPIO 42（`cover-panel-reset-hold`），确保直板状态下副屏 OLED 保持断电休眠 |
+| **Adreno 740 GPU** | ✅ 已完成 | 与 `msm_dpu` 融合于统一 `/dev/dri/card1` + `renderD128`，原生 `freedreno FD740`（OpenGL 4.6 / GLES 3.2）+ Turnip Vulkan + `GMU v4.1.9` + UBWC 4.0 硬件加速就绪 |
+| **主屏 10 点触控** | ✅ 已完成 | 用户态硬件中断守护进程 [`drivers/b5q_touchd.c`](drivers/b5q_touchd.c) + 内核模块 [`drivers/synaptics_s3916_sec.c`](drivers/synaptics_s3916_sec.c)，通过 `i2c-gpio`（GPIO 44/45）绕过 SM8550 `gpi_dma1` 丢包缺陷，支持 GPIO 19 硬件中断与亮屏自动归零 |
+| **Wi-Fi 6E** | ✅ 已完成 | `WCN6855 / QCA6490`（`ath11k_pci` `01:00.0`）+ `pmk8550_sleep_clk` + 4-cell `iommu-map` + `NFA725` (`iPA`) BDF，支持 `NetworkManager` 开机自动联网与无线 SSH |
+| **蓝牙 5.3** | ✅ 已完成 | `WCN6855`（`uart14`）+ `hci_uart`/`btqca` + 固定 `local-bd-address`（`02:B5:73:10:00:02`）+ `BlueZ` / `Bluedevil` |
+| **重力感应自动旋转** | ✅ 已完成 | SM8550 ADSP/SSC（FastRPC Service 400）+ [`patches/0002-hexagonrpcd-sm8550-nonfatal-unsupported.patch`](patches/0002-hexagonrpcd-sm8550-nonfatal-unsupported.patch) 修正版 `hexagonrpcd` + [`drivers/b5q_sensor_proxy.c`](drivers/b5q_sensor_proxy.c)（`net.hadess.SensorProxy` 桥接至 KWin 自动旋转） |
+| **双立体声扬声器** | ✅ 已完成 | 上下双 `TFA9878` SmartPA（`i2c_hub_6` `@0x34` / `@0x35`）+ [`patches/0003-asoc-tfa9878-sc8280xp-linux735.patch`](patches/0003-asoc-tfa9878-sc8280xp-linux735.patch) + AudioReach [`audio/audioreach/SM8550-Samsung-B5Q.m4`](audio/audioreach/SM8550-Samsung-B5Q.m4)（`PRIMARY_MI2S_RX` `SD1`）+ ALSA UCM2 + PipeWire 立体声实测通过 |
+| **双数字麦克风** | ✅ 已完成 | 底部 `DMIC1` + 顶部 `DMIC3` 接入 `TX_CODEC_DMA_TX_3`，设备树 `audio-routing` 级联 `VA_MCLK` 与 `vreg_l10b_1p8`（`qcom,dmic-sample-rate = 2400000`），PipeWire `HiFi__Mic__source` 实测低底噪立体声采集 |
+| **电源管理 / PMIC / USB** | ✅ 已完成 | `MAX77705`（Rev.0x2）电量计/充电器 + `Samsung S2DOS05`（`i2c-gpio` 20/21 @ `0x60`）+ 动态功率域同步（`b5q-power-sync`）+ USB CDC-NCM 免驱网卡（`172.16.42.1`）+ 物理按键 + `elogind` 关机/重启包装 |
+| **桌面应用生态** | ✅ 已完成 | **KDE Plasma 6.2.4**（Mobile / Desktop 切换）+ **Flatpak**（Flathub + `xdg-desktop-portal-kde`）+ **Podman** + **Distrobox** |
+
+### 不在封版范围内的项目（未实现）
+
+- 5G / LTE 蜂窝基带数据、语音通话与短信
+- 前置 / 后置摄像头传感器与 ISP 管线
+- NFC 控制器
+- 外屏 OLED 显示驱动与折叠霍尔传感器逻辑
+
+---
+
+## 📦 Release `v1.0.0` 发布包清单与刷写说明
+
+固化发布包位于 GitHub Releases：[`v1.0.0`](https://github.com/Jerry-zirui/postmarketOS_on_zflip5/releases/tag/v1.0.0)，包含以下 6 个产物：
+
+| 文件名 | 内容与部署路径 |
+|---|---|
+| `b5q-linux-7.3.5-p4-recovery.img` | 可直接刷入 `/dev/sda23`（`recovery` 分区）的 Android Boot Image v2 镜像（含内核 `Image_p4`、最新设备树 DTB 与 `initramfs_p5.cpio.gz`） |
+| `b5q-linux-7.3.5-p4-boot-components.tar.gz` | 散装启动组件包：`Image_p4`、`sm8550-samsung-b5q_p4.dtb`、`initramfs_p5.cpio.gz`、[`configs/kernel_7.3.5-b5q-p4.config`](configs/kernel_7.3.5-b5q-p4.config) 及打包脚本 `mkbootimg_v2.py` |
+| `b5q-linux-7.3.5-p4-modules.tar.gz` | 对应 `7.3.5-b5q-p4` 内核的全部已剥离符号 `.ko` 内核模块，解压至根文件系统 `/lib/modules/7.3.5-b5q-p4` 并执行 `depmod -a 7.3.5-b5q-p4` |
+| `b5q-audio-ucm2-tplg-v1.0.0.tar.gz` | 自研开源音频拓扑与 UCM2 配置包：解压安装 `/lib/firmware/qcom/sm8550/SM8550-Samsung-B5Q-tplg.bin` 与 `/usr/share/alsa/ucm2/` 配置文件 |
+| `b5q-userspace-v1.0.0.tar.gz` | 用户态自研二进制与初始化脚本集合：解压覆盖 `/sbin/b5q-desktop-init` 与 `/usr/local/bin/b5q-*` |
+| `SHA256SUMS.txt` | 上述 5 个发布包的 SHA256 校验清单 |
+
+### 安全刷写步骤（仅针对 `recovery` 分区 `/dev/sda23`）
+
+> ⚠️ **警告**：切勿向 `/dev/sda` 的其他分区写入镜像；操作前请确保已保留原厂备份。
+
+```sh
+# 1. 在宿主机或设备端核对下载包的 SHA256
+shasum -a 256 -c SHA256SUMS.txt
+
+# 2. 在设备端备份当前 recovery 分区（可选）并刷入 /dev/sda23
+dd if=b5q-linux-7.3.5-p4-recovery.img of=/dev/sda23 bs=4M conv=fsync
+
+# 3. 逐字节回读校验 SHA256 一致后再重启
+img_bytes=$(wc -c < b5q-linux-7.3.5-p4-recovery.img)
+sha256sum b5q-linux-7.3.5-p4-recovery.img
+head -c "$img_bytes" /dev/sda23 | sha256sum
+sync && /usr/local/bin/b5q-reboot linux
+```
+
+若部署根文件系统配套文件，在目标根分区 `/` 中解压模块、音频配置与用户态工具：
+
+```sh
+tar -xzf b5q-linux-7.3.5-p4-modules.tar.gz -C /
+depmod -a 7.3.5-b5q-p4
+tar -xzf b5q-audio-ucm2-tplg-v1.0.0.tar.gz -C /
+tar -xzf b5q-userspace-v1.0.0.tar.gz -C /
+```
+
+### ⚠️ 闭源固件声明
+
+为遵守许可协议，**GitHub Release 发布包与本仓库均不包含任何高通/三星/Goodix/Synaptics 闭源专有固件二进制**（如 `adsp.mbn`、`a740_zap.mbn`、`tfa98xx.cnt`、`WCN6855` / `QCA6490` WLAN/BT 固件及 `NFA725` BDF 等）。使用本系统前需自行从合法持有的 `SM-F7310` 原厂分区提取对应固件并放置到 `/lib/firmware/` 相应路径。
 
 ---
 
@@ -38,34 +92,44 @@
 
 ```text
 .
-├── README.md                                # 项目总览与导航
+├── README.md                                  # 项目总览与 v1.0.0 封版说明
+├── audio/
+│   ├── audioreach/
+│   │   └── SM8550-Samsung-B5Q.m4              # SM8550 AudioReach 音频拓扑源码
+│   └── ucm2/Qualcomm/sm8550/
+│       ├── SM8550-Samsung-B5Q.conf            # ALSA UCM2 主配置与 BootSequence
+│       └── HiFi.conf                          # Speaker (PRIMARY_MI2S_RX) & Mic (TX_CODEC_DMA_TX_3) 定义
+├── configs/
+│   └── kernel_7.3.5-b5q-p4.config             # Linux 7.3.5-b5q-p4 最终内核 .config 快照
 ├── docs/
-│   ├── HARDWARE_COMPATIBILITY_REPORT.md     # 实机提取硬件参数与 postmarketOS 兼容性评估报告
-│   └── IMPLEMENTATION_PLAN.md               # 主线 Linux (postmarketOS) 移植分阶段实施计划
-└── extracted_hw_info/                       # 从真机 (SM-F7310) 实时提取的底层硬件基线数据
-    ├── fdt.dtb                              # 运行时导出的原始设备树二进制 (/sys/firmware/fdt)
-    ├── fdt.dts                              # 反编译出的 35,752 行完整下游设备树源码
-    ├── kernel_config.txt                    # 原厂 GKI 5.15.148 内核完整编译配置 (.config)
-    ├── cmdline.txt                          # Bootloader (ABL) 传递的启动参数与屏幕批次 ID
-    ├── iomem.txt                            # 物理内存映射表 (/proc/iomem)
-    ├── partitions.txt                       # UFS 4.0 分区布局与 /dev/block/by-name 映射
-    ├── input_devices.txt                    # 按键、触控屏与传感器输入总线拓扑
-    ├── hardware_peripherals.txt             # DRM 显示状态、传感器芯片型号、PMIC 与电源信息
-    └── firmware_files.txt                   # /vendor/firmware_mnt 与 /vendor/firmware 固件清单
+│   ├── HARDWARE_COMPATIBILITY_REPORT.md       # 实机提取硬件参数与兼容性评估报告
+│   └── IMPLEMENTATION_PLAN.md                 # 主线 Linux 分阶段移植实施记录
+├── drivers/
+│   ├── panel-samsung-s6e3fac-b5q.c            # S6E3FAC 1080x2640@120Hz DSC 1.1 主屏 DRM 驱动
+│   ├── synaptics_s3916_sec.c                  # Synaptics S3916A 触控内核输入驱动
+│   ├── b5q_touchd.c                           # S3916A 低延迟触控守护进程
+│   ├── b5q_sensor_proxy.c                     # ADSP Sensor Core -> net.hadess.SensorProxy 桥接服务
+│   └── b5q-cover-off.c                        # 外屏 TLMM GPIO 42 硬件复位拉低工具
+├── dts/
+│   └── sm8550-samsung-b5q.dts                 # SM-F7310 直板改装版完整主线设备树
+├── patches/
+│   ├── 0001-drm-msm-sm8550-s6e3fac-dsc-initial-lines-cmd-cfg0.patch
+│   ├── 0002-hexagonrpcd-sm8550-nonfatal-unsupported.patch
+│   └── 0003-asoc-tfa9878-sc8280xp-linux735.patch
+├── scripts/
+│   ├── build_phase4_kernel_on_phone.sh        # 设备端原生编译 Linux 7.3.5-b5q-p4 自动化脚本
+│   ├── configure_phase5_kde_on_phone.sh       # KDE Plasma 6 + PipeWire + BlueZ + UCM 配置脚本
+│   ├── b5q-desktop-init                       # 固化版 PID 1 初始化脚本 (/sbin/b5q-desktop-init)
+│   ├── ssh_b5q.sh                             # USB CDC-NCM (172.16.42.1) 快捷连接脚本
+│   └── ...                                    # 分阶段历史构建与恢复脚本
+├── tools/
+│   └── mkbootimg_v2.py                        # Android Boot Image v2 打包脚本
+└── extracted_hw_info/                         # 真机 SM-F7310 提取的硬件基线参考数据
 ```
 
 ---
 
-## 📖 核心文档入口
+## 📖 核心技术文档
 
-1. **[硬件架构解析与 postmarketOS 兼容性评估报告](docs/HARDWARE_COMPATIBILITY_REPORT.md)**
-   - 开发宿主机与目标手机硬件基线盘点
-   - 真机实测外设芯片型号、总线地址、中断引脚与内存保留区详细清单
-   - 砍掉副屏与折叠逻辑后的各模块主线 Linux 兼容性四级矩阵
-2. **[主线 Linux (postmarketOS) 移植实施计划](docs/IMPLEMENTATION_PLAN.md)**
-   - **Phase 0**：宿主机与手机端协同开发环境搭建、关键分区安全备份
-   - **Phase 1**：无损二级引导链路（UniLoader / Fastboot 内存加载内核）与早期调试通道 (`simple-framebuffer` + `pstore` + `USB NCM/RNDIS`)
-   - **Phase 2**：直板化主线设备树 `sm8550-samsung-b5q.dts` 编写与主线内核首次启动
-   - **Phase 3**：核心交互外设调通（主屏 `Synaptics S3916A` 触控、UFS 4.0、`QCA6490` Wi-Fi 6E/蓝牙 5.3、`MAX77705` 电源管理、Adreno 740 3D 加速）
-   - **Phase 4**：原生 DRM 面板驱动 (`S6E3FAC` + `S2DOS05` 120Hz 与休眠唤醒)、音频 (`WCD938x` + `TFA9878`) 与 5G 数据通信
-   - **Phase 5**：完整桌面融合体验 (`GNOME Mobile` / `KDE Plasma 6` + `Distrobox`) 打磨
+1. **[硬件架构解析与兼容性评估报告](docs/HARDWARE_COMPATIBILITY_REPORT.md)** — 外设芯片型号、总线拓扑、中断引脚、内存保留区及兼容性基线。
+2. **[主线 Linux 移植分阶段实施计划](docs/IMPLEMENTATION_PLAN.md)** — 从引导链路、设备树、显示/触控、Wi-Fi/蓝牙/传感器到音频和桌面栈的完整演进记录。

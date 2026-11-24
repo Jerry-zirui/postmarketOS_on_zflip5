@@ -1,0 +1,133 @@
+#!/bin/sh
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export HOME=/root
+export TERM=linux
+
+mountpoint -q /proc || mount -t proc proc /proc
+mountpoint -q /sys || mount -t sysfs sysfs /sys
+mountpoint -q /dev || mount -t devtmpfs devtmpfs /dev
+mkdir -p /dev/pts /dev/shm /run /tmp /sys/kernel/config /sys/fs/cgroup
+mountpoint -q /dev/pts || mount -t devpts devpts /dev/pts
+mountpoint -q /dev/shm || mount -t tmpfs tmpfs /dev/shm
+mountpoint -q /run || mount -t tmpfs tmpfs /run
+mountpoint -q /tmp || mount -t tmpfs tmpfs /tmp
+mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
+mount --make-rshared / 2>/dev/null || true
+mountpoint -q /sys/kernel/config || mount -t configfs configfs /sys/kernel/config 2>/dev/null || true
+mountpoint -q /sys/fs/cgroup || mount -t cgroup2 none /sys/fs/cgroup 2>/dev/null || true
+
+hostname -F /etc/hostname 2>/dev/null || hostname b5q-plasma
+
+# Activate 4 GiB swapfile
+[ -f /swapfile ] && swapon /swapfile 2>/dev/null || true
+
+# Machine ID for D-Bus / elogind / NetworkManager / Flatpak
+[ -s /etc/machine-id ] || /usr/bin/dbus-uuidgen --ensure=/etc/machine-id 2>/dev/null || true
+
+# Show early boot progress on screen
+exec </dev/tty0 >/dev/tty0 2>&1
+
+# USB CDC-NCM + Dropbear SSH UP in <1s
+ip link set lo up 2>/dev/null || true
+ip addr add 172.16.42.1/24 dev usb0 2>/dev/null || true
+ip link set usb0 up 2>/dev/null || true
+/usr/sbin/dropbear -R -B -p 22 2>/dev/null &
+
+# Start udevd
+/sbin/udevd --daemon 2>/dev/null || true
+/sbin/udevadm trigger --action=add 2>/dev/null || true
+/sbin/udevadm settle --timeout=3 2>/dev/null || true
+
+# Hold cover display (B5_S6E3FC5, TLMM GPIO 42) in hardware reset so it stays off
+/usr/local/bin/b5q-cover-off 2>/dev/null || true
+
+echo ""
+echo "=== [Z Flip 5 Mainline Linux 7.3.5 | 334 GiB /dev/sda37] ==="
+echo "[NET]  USB CDC-NCM 172.16.42.1 | Dropbear SSH :22"
+
+echo "[MODS] Loading Adreno 740 GPU (msm)..."
+modprobe panel-samsung-s6e3fac-b5q 2>&1 || true
+modprobe msm 2>&1 || true
+sleep 1
+
+echo "[MODS] Loading Wi-Fi 6E (ath11k_pci)..."
+modprobe ath11k_pci 2>&1 || true
+
+echo "[MODS] Loading Bluetooth 5.3 (hci_uart + btqca)..."
+modprobe btqca 2>&1 || true
+modprobe hci_uart 2>&1 || true
+( sleep 2; btmgmt --index 0 public-addr 02:B5:73:10:00:02 >/dev/null 2>&1 || true ) &
+
+echo "[MODS] Loading Audio (TFA9878 SmartPA + LPASS/AudioReach)..."
+modprobe snd-soc-tfa98xx 2>&1 || true
+modprobe snd-soc-dmic 2>&1 || true
+modprobe snd-soc-sc8280xp 2>&1 || true
+
+echo "[MODS] Starting Synaptics S3916A Touchscreen (b5q-touchd over i2c-gpio)..."
+/usr/local/bin/b5q-touchd >/tmp/b5q-touchd.log 2>&1 &
+sleep 1
+
+# Re-trigger udev for newly loaded DRM / input / net devices so elogind/KWin sees them
+/sbin/udevadm trigger --action=add --subsystem-match=drm --subsystem-match=input --subsystem-match=sound 2>/dev/null || true
+/sbin/udevadm settle --timeout=2 2>/dev/null || true
+
+# Start D-Bus (system), elogind, Polkit, UPower, BlueZ, NetworkManager
+mkdir -p /run/dbus /run/elogind /run/NetworkManager /var/lib/NetworkManager /var/lib/bluetooth /var/lib/sddm
+chown messagebus:messagebus /run/dbus 2>/dev/null || true
+chown sddm:video /var/lib/sddm 2>/dev/null || true
+
+echo "[SYS]  Starting D-Bus, elogind, Polkit, UPower, BlueZ, NetworkManager..."
+/usr/bin/dbus-daemon --system --nofork --nopidfile >/tmp/dbus.log 2>&1 &
+for i in 1 2 3 4 5; do
+    [ -S /run/dbus/system_bus_socket ] && break
+    sleep 1
+done
+
+/usr/libexec/elogind/elogind >/tmp/elogind.log 2>&1 &
+sleep 1
+/usr/lib/polkit-1/polkitd >/tmp/polkit.log 2>&1 &
+/usr/libexec/upowerd >/tmp/upower.log 2>&1 &
+/usr/lib/bluetooth/bluetoothd >/tmp/bluetoothd.log 2>&1 &
+
+# Qualcomm ADSP Sensor Core (Service 400) + net.hadess.SensorProxy bridge for Plasma Mobile Auto-Rotate
+[ -x /usr/local/bin/b5q-sensor-proxy ] && /usr/local/bin/b5q-sensor-proxy >/tmp/b5q-sensor-proxy.log 2>&1 &
+(
+    for i in $(seq 1 15); do
+        [ -c /dev/fastrpc-adsp ] && break
+        sleep 1
+    done
+    if [ -c /dev/fastrpc-adsp ] && [ -x /opt/hexagonrpc/hexagonrpcd ]; then
+        modprobe qrtr_smd 2>/dev/null || true
+        su -s /bin/sh fastrpc -c "LD_LIBRARY_PATH=/opt/hexagonrpc /opt/hexagonrpc/hexagonrpcd -f /dev/fastrpc-adsp -d adsp -R /usr/share/qcom >/tmp/hexagonrpcd-root.log 2>&1 &"
+        su -s /bin/sh fastrpc -c "LD_LIBRARY_PATH=/opt/hexagonrpc /opt/hexagonrpc/hexagonrpcd -f /dev/fastrpc-adsp -d adsp -s -R /usr/share/qcom >/tmp/hexagonrpcd-sensor.log 2>&1 &"
+    fi
+) &
+
+# Let NetworkManager manage wlan0 (wpa_supplicant via D-Bus)
+/usr/sbin/wpa_supplicant -u -s -B >/tmp/wpa_dbus.log 2>&1 || true
+/usr/sbin/NetworkManager --no-daemon >/tmp/nm.log 2>&1 &
+
+# Background NTP sync once Wi-Fi comes up
+(
+    for i in $(seq 1 30); do
+        if ip route | grep -q "^default "; then
+            /usr/sbin/ntpd -n -q -p ntp.aliyun.com >/dev/null 2>&1 || true
+            break
+        fi
+        sleep 2
+    done
+) &
+
+echo "[GUI]  Handing off tty1 to SDDM -> KDE Plasma 6 ($(cat /etc/b5q-session 2>/dev/null || echo mobile))..."
+echo "[READY] USB SSH: ./scripts/ssh_b5q.sh | User: jerry (pw: 1234)"
+
+# Release tty0/tty1 so SDDM + KWin 6 own VT1 cleanly
+( sleep 8; /usr/local/bin/b5q-power-sync >/tmp/b5q-power-sync.log 2>&1 ) &
+
+exec </dev/null >/tmp/b5q-init.log 2>&1
+
+# Supervise SDDM in PID 1 loop (supports instant restart/mode switch via b5q-plasma-mode)
+while true; do
+    /usr/bin/sddm >/tmp/sddm.log 2>&1
+    sleep 2
+done
