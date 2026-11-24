@@ -156,6 +156,30 @@ if "dsi_read(msm_host, REG_DSI_CMD_CFG0) & 0x0ff00000" not in s:
     print("[+] Patched dsi_host.c (preserve CMD_CFG0 upper bits)")
 else:
     print("[=] dsi_host.c already patched")
+
+# Patch 7: Gate ABL MDSS clocks off before msm_mdss_reset() when clk_ignore_unused is active
+p = os.path.join(L, "drivers/gpu/drm/msm/msm_mdss.c")
+s = open(p).read()
+if "msm_mdss_reset moved after clock gate" not in s:
+    old_top = "\tret = msm_mdss_reset(&pdev->dev);\n\tif (ret)\n\t\treturn ERR_PTR(ret);\n"
+    target = "\tmsm_mdss->num_clocks = ret;\n\tmsm_mdss->is_mdp5 = is_mdp5;"
+    new_block = (
+        "\tmsm_mdss->num_clocks = ret;\n"
+        "\tmsm_mdss->is_mdp5 = is_mdp5;\n\n"
+        "\tif (!is_mdp5 && clk_bulk_prepare_enable(msm_mdss->num_clocks, msm_mdss->clocks) == 0)\n"
+        "\t\tclk_bulk_disable_unprepare(msm_mdss->num_clocks, msm_mdss->clocks);\n\n"
+        "\tret = msm_mdss_reset(&pdev->dev);\n"
+        "\tif (ret)\n"
+        "\t\treturn ERR_PTR(ret);"
+    )
+    assert old_top in s, "msm_mdss.c reset pattern not found"
+    assert target in s, "msm_mdss.c clock pattern not found"
+    s = s.replace(old_top, "\t/* msm_mdss_reset moved after clock gate to preserve ABL MDSS state */\n", 1)
+    s = s.replace(target, new_block, 1)
+    open(p, "w").write(s)
+    print("[+] Patched msm_mdss.c (clock gate before msm_mdss_reset)")
+else:
+    print("[=] msm_mdss.c already patched")
 PYEOF
 
 echo "=== [3/5] Configuring Phase 4 Kernel (DRM_MSM_DPU + DSI + S6E3FAC) ==="

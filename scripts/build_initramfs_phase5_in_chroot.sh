@@ -146,11 +146,21 @@ if [ -b /dev/sda37 ]; then
     echo "[ROOT] Found /dev/sda37 (Linux Desktop partition), mounting..."
     if mount -t ext4 -o rw,noatime /dev/sda37 /newroot; then
         if [ -x /newroot/sbin/b5q-desktop-init ]; then
-            echo "[ROOT] Booting /dev/sda37 -> /sbin/b5q-desktop-init (KDE Plasma 6)!"
-            do_switch_root /sbin/b5q-desktop-init
+            if sh -n /newroot/sbin/b5q-desktop-init 2>/dev/null; then
+                echo "[ROOT] Booting /dev/sda37 -> /sbin/b5q-desktop-init (KDE Plasma 6)!"
+                do_switch_root /sbin/b5q-desktop-init
+            else
+                echo "[ROOT] WARNING: /newroot/sbin/b5q-desktop-init failed sh -n syntax check, falling back to Tier 2/3!"
+                umount /newroot 2>/dev/null || true
+            fi
         elif [ -x /newroot/sbin/b5q-init ]; then
-            echo "[ROOT] Booting /dev/sda37 -> /sbin/b5q-init!"
-            do_switch_root /sbin/b5q-init
+            if sh -n /newroot/sbin/b5q-init 2>/dev/null; then
+                echo "[ROOT] Booting /dev/sda37 -> /sbin/b5q-init!"
+                do_switch_root /sbin/b5q-init
+            else
+                echo "[ROOT] WARNING: /newroot/sbin/b5q-init failed sh -n syntax check, falling back to Tier 2/3!"
+                umount /newroot 2>/dev/null || true
+            fi
         else
             echo "[ROOT] /dev/sda37 has no init yet, falling back to /dev/sda29..."
             umount /newroot 2>/dev/null || true

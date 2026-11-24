@@ -186,6 +186,12 @@ AutoSuspendAction=0
 EOF
 chmod 600 "$ROOT/home/jerry/.config/powerdevilrc"
 
+mkdir -p "$ROOT/home/jerry/.config/autostart"
+for _desk in org.kde.discover.notifier baloo_file; do
+    printf '[Desktop Entry]\nHidden=true\n' > "$ROOT/home/jerry/.config/autostart/${_desk}.desktop"
+done
+printf '[Basic Settings]\nIndexing-Enabled=false\n' > "$ROOT/home/jerry/.config/baloofilerc"
+
 chroot "$ROOT" chown -R jerry:users /home/jerry/.config
 
 # Configure Flatpak Flathub repository (system-wide)
@@ -276,6 +282,23 @@ EOF
 chmod 755 "$ROOT/usr/local/bin/b5q-reboot"
 ln -sf /usr/local/bin/b5q-plasma-mode "$ROOT/usr/bin/b5q-plasma-mode"
 ln -sf /usr/local/bin/b5q-reboot "$ROOT/usr/bin/b5q-reboot"
+
+cat <<'EOF' > "$ROOT/usr/local/bin/b5q-power-sync"
+#!/bin/sh
+# Trigger deferred interconnect & RPMh power domain sync_state after drivers load,
+# releasing ABL boot-time INT_MAX DDR/bus votes so LPDDR5X and CX/MX scale dynamically.
+for f in \
+    /sys/devices/platform/interconnect-*/state_synced \
+    /sys/devices/platform/soc@0/*.interconnect/state_synced \
+    /sys/devices/platform/soc@0/17a00000.rsc/17a00000.rsc:power-controller/state_synced
+do
+    [ -e "$f" ] || continue
+    if [ "$(cat "$f" 2>/dev/null)" = "0" ]; then
+        printf "1" > "$f" 2>/dev/null && echo "synced: $f" || echo "skip/err: $f"
+    fi
+done
+EOF
+chmod 755 "$ROOT/usr/local/bin/b5q-power-sync"
 
 mkdir -p "$ROOT/usr/local/src"
 cat <<'EOF' > "$ROOT/usr/local/src/b5q-cover-off.c"
@@ -492,6 +515,8 @@ echo "[GUI]  Handing off tty1 to SDDM -> KDE Plasma 6 ($(cat /etc/b5q-session 2>
 echo "[READY] USB SSH: ./scripts/ssh_b5q.sh | User: jerry (pw: 1234)"
 
 # Release tty0/tty1 so SDDM + KWin 6 own VT1 cleanly
+( sleep 8; /usr/local/bin/b5q-power-sync >/tmp/b5q-power-sync.log 2>&1 ) &
+
 exec </dev/null >/tmp/b5q-init.log 2>&1
 
 # Supervise SDDM in PID 1 loop (supports instant restart/mode switch via b5q-plasma-mode)
